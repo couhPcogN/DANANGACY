@@ -1,0 +1,378 @@
+{
+  "fileKey": "jDD0jsGqFT7O88xKzG8Yrj",
+  "pageNodeId": "0:1",
+  "pageName": "01 · Mockup & UI kit",
+  "verifiedAt": "2026-11-05",
+  "frames": [
+    {
+      "id": "frame-001",
+      "name": "A01 · Xác thực — Chào mừng",
+      "nodeId": "1:1337"
+    },
+    {
+      "id": "frame-002",
+      "name": "A02 · Xác thực — Đăng nhập",
+      "nodeId": "1:1301"
+    },
+    {
+      "id": "frame-003",
+      "name": "A03 · Xác thực — Đăng ký",
+      "nodeId": "1:1257"
+    },
+    {
+      "id": "frame-004",
+      "name": "A04 · Xác thực — Quên mật khẩu",
+      "nodeId": "1:1229"
+    },
+    {
+      "id": "frame-005",
+      "name": "A05 · Xác thực — Nhập mã xác nhận",
+      "nodeId": "76:258"
+    },
+    {
+      "id": "frame-006",
+      "name": "A06 · Xác thực — Đặt lại mật khẩu",
+      "nodeId": "76:302"
+    },
+    {
+      "id": "frame-007",
+      "name": "B01 · Điểm đến — Chi tiết địa điểm",
+      "nodeId": "1:1176"
+    },
+    {
+      "id": "frame-008",
+      "name": "B01A — Đã lưu",
+      "nodeId": "27:8894"
+    },
+    {
+      "id": "frame-009",
+      "name": "B02 · Điểm đến — Bản đồ",
+      "nodeId": "1:1084"
+    },
+    {
+      "id": "frame-010",
+      "name": "B03 · Chi tiết — Bán đảo Sơn Trà",
+      "nodeId": "79:1593"
+    },
+    {
+      "id": "frame-011",
+      "name": "B04 · Chi tiết — Cầu Rồng",
+      "nodeId": "79:1661"
+    },
+    {
+      "id": "frame-012",
+      "name": "B05 · Chi tiết — Ngũ Hành Sơn",
+      "nodeId": "79:1728"
+    },
+    {
+      "id": "frame-013",
+      "name": "B06 · Chi tiết — Bảo tàng Đà Nẵng",
+      "nodeId": "79:1791"
+    },
+    {
+      "id": "frame-014",
+      "name": "C01 · Lịch trình của tôi — Sau khi tạo lịch mới (2 lịch)",
+      "nodeId": "23:844"
+    },
+    {
+      "id": "frame-015",
+      "name": "C01 · Lịch trình — Lịch trình của tôi",
+      "nodeId": "1:1020"
+    },
+    {
+      "id": "frame-016",
+      "name": "C02 · Lịch trình — Thông tin chuyến đi",
+      "nodeId": "1:973"
+    },
+    {
+      "id": "frame-017",
+      "name": "C03 · Lịch trình — Sở thích & nhịp độ",
+      "nodeId": "1:918"
+    },
+    {
+      "id": "frame-018",
+      "name": "C04 · Lịch trình — Chọn điểm đến",
+      "nodeId": "1:856"
+    },
+    {
+      "id": "frame-019",
+      "name": "C05 · Lịch trình — Xem lại lịch trình",
+      "nodeId": "1:798"
+    },
+    {
+      "id": "frame-020",
+      "name": "C05A · Lịch trình — Lưu thành công",
+      "nodeId": "21:212"
+    },
+    {
+      "id": "frame-021",
+      "name": "C06 · Chi tiết lịch trình — Đã thay thế điểm đến",
+      "nodeId": "23:1284"
+    },
+    {
+      "id": "frame-022",
+      "name": "C06 · Chi tiết lịch trình — Đã đổi giờ 14_00–17_00",
+      "nodeId": "23:663"
+    },
+    {
+      "id": "frame-023",
+      "name": "C06 · Khung chỉnh giờ đang mở — Conflict",
+      "nodeId": "21:4166"
+    },
+    {
+      "id": "frame-024",
+      "name": "C06 · Khung chỉnh giờ đang mở — HoursWarning",
+      "nodeId": "21:4570"
+    },
+    {
+      "id": "frame-025",
+      "name": "C06 · Khung chỉnh giờ đang mở — InvalidRange",
+      "nodeId": "21:4368"
+    },
+    {
+      "id": "frame-026",
+      "name": "C06 · Khung chỉnh giờ đang mở — Ready",
+      "nodeId": "21:3964"
+    },
+    {
+      "id": "frame-027",
+      "name": "C06 · Lịch trình — Chi tiết lịch trình",
+      "nodeId": "1:728"
+    },
+    {
+      "id": "frame-028",
+      "name": "C07 · Chỉnh sửa lịch trình — Một ngày di sản Đà Nẵng",
+      "nodeId": "32:1562"
+    },
+    {
+      "id": "frame-029",
+      "name": "C07A · Chỉnh sửa — Hội An (bản nháp 3 điểm)",
+      "nodeId": "27:9003"
+    },
+    {
+      "id": "frame-030",
+      "name": "C07B · Chỉnh sửa — Chọn địa điểm đã lưu",
+      "nodeId": "27:9077"
+    },
+    {
+      "id": "frame-031",
+      "name": "C07C · Chỉnh sửa — Ngày và giờ hợp lệ",
+      "nodeId": "27:9152"
+    },
+    {
+      "id": "frame-032",
+      "name": "C07D · Chỉnh sửa — Giờ không hợp lệ",
+      "nodeId": "27:9226"
+    },
+    {
+      "id": "frame-033",
+      "name": "C07E · Chỉnh sửa — Trùng giờ",
+      "nodeId": "27:9300"
+    },
+    {
+      "id": "frame-034",
+      "name": "C07F · Chỉnh sửa — Ngoài giờ mở cửa",
+      "nodeId": "27:9375"
+    },
+    {
+      "id": "frame-035",
+      "name": "C07G · Chỉnh sửa — Ngày ngoài chuyến đi",
+      "nodeId": "27:9449"
+    },
+    {
+      "id": "frame-036",
+      "name": "C07H · Chỉnh sửa — Bản nháp 4 điểm",
+      "nodeId": "27:9528"
+    },
+    {
+      "id": "frame-037",
+      "name": "C07I · Chi tiết Hội An — Đã lưu thay đổi",
+      "nodeId": "27:9581"
+    },
+    {
+      "id": "frame-038",
+      "name": "C07J · Chỉnh sửa — Hủy thay đổi",
+      "nodeId": "27:9623"
+    },
+    {
+      "id": "frame-039",
+      "name": "Chi tiết lịch trình — Hội An trong tôi (lịch có sẵn)",
+      "nodeId": "22:636"
+    },
+    {
+      "id": "frame-040",
+      "name": "D01 · Thời tiết — Cảnh báo mưa",
+      "nodeId": "1:685"
+    },
+    {
+      "id": "frame-041",
+      "name": "D02 · Thời tiết — Địa điểm thay thế",
+      "nodeId": "1:638"
+    },
+    {
+      "id": "frame-042",
+      "name": "D03 · Thời tiết — Xác nhận thay thế",
+      "nodeId": "1:588"
+    },
+    {
+      "id": "frame-043",
+      "name": "DANANGACY — Explore",
+      "nodeId": "1:1361"
+    },
+    {
+      "id": "frame-044",
+      "name": "DANANGACY — Home · Sau khi tạo lịch mới",
+      "nodeId": "22:739"
+    },
+    {
+      "id": "frame-045",
+      "name": "E01 · Mini game — Thử thách",
+      "nodeId": "1:546"
+    },
+    {
+      "id": "frame-046",
+      "name": "E01B — Mini game · Sau hoàn thành",
+      "nodeId": "60:3664"
+    },
+    {
+      "id": "frame-047",
+      "name": "E02 · Di sản — Giới thiệu thử thách",
+      "nodeId": "1:507"
+    },
+    {
+      "id": "frame-048",
+      "name": "E02A — Giới thiệu · Chưa bắt đầu",
+      "nodeId": "60:3233"
+    },
+    {
+      "id": "frame-049",
+      "name": "E03 · Câu 1 — 01 · Chưa chọn đáp án",
+      "nodeId": "60:5866"
+    },
+    {
+      "id": "frame-050",
+      "name": "E03 · Câu 1 — 02 · Đã chọn, chưa xác nhận",
+      "nodeId": "60:3275"
+    },
+    {
+      "id": "frame-051",
+      "name": "E03 · Câu 1 — 03 · Đã xác nhận đúng",
+      "nodeId": "60:5917"
+    },
+    {
+      "id": "frame-052",
+      "name": "E03 · Câu 2 — 01 · Chưa chọn đáp án",
+      "nodeId": "60:5965"
+    },
+    {
+      "id": "frame-053",
+      "name": "E03 · Câu 2 — 02 · Đã chọn, chưa xác nhận",
+      "nodeId": "1:460"
+    },
+    {
+      "id": "frame-054",
+      "name": "E03 · Câu 2 — 03 · Đã xác nhận đúng",
+      "nodeId": "60:3328"
+    },
+    {
+      "id": "frame-055",
+      "name": "E03 · Câu 3 — 01 · Chưa chọn đáp án",
+      "nodeId": "60:6016"
+    },
+    {
+      "id": "frame-056",
+      "name": "E03 · Câu 3 — 02 · Đã chọn, chưa xác nhận",
+      "nodeId": "60:3378"
+    },
+    {
+      "id": "frame-057",
+      "name": "E03 · Câu 3 — 03 · Đã xác nhận đúng",
+      "nodeId": "60:6067"
+    },
+    {
+      "id": "frame-058",
+      "name": "E03 · Câu 4 — 01 · Chưa chọn đáp án",
+      "nodeId": "60:6115"
+    },
+    {
+      "id": "frame-059",
+      "name": "E03 · Câu 4 — 02 · Đã chọn, chưa xác nhận",
+      "nodeId": "60:3431"
+    },
+    {
+      "id": "frame-060",
+      "name": "E03 · Câu 4 — 03 · Đã xác nhận sai",
+      "nodeId": "60:3484"
+    },
+    {
+      "id": "frame-061",
+      "name": "E03 · Câu 5 — 01 · Chưa chọn đáp án",
+      "nodeId": "60:6166"
+    },
+    {
+      "id": "frame-062",
+      "name": "E03 · Câu 5 — 02 · Đã chọn, chưa xác nhận",
+      "nodeId": "60:3538"
+    },
+    {
+      "id": "frame-063",
+      "name": "E03 · Câu 5 — 03 · Đã xác nhận đúng",
+      "nodeId": "60:6217"
+    },
+    {
+      "id": "frame-064",
+      "name": "E04 · Di sản — Kết quả thử thách",
+      "nodeId": "1:425"
+    },
+    {
+      "id": "frame-065",
+      "name": "E05 — Xem lại đáp án · Cả 5 câu",
+      "nodeId": "60:3591"
+    },
+    {
+      "id": "frame-066",
+      "name": "F01 · Mini game — Phần thưởng",
+      "nodeId": "1:347"
+    },
+    {
+      "id": "frame-067",
+      "name": "F02 · Phần thưởng — Chi tiết ưu đãi",
+      "nodeId": "1:305"
+    },
+    {
+      "id": "frame-068",
+      "name": "F03 · Phần thưởng — Xác nhận đổi ưu đãi",
+      "nodeId": "1:261"
+    },
+    {
+      "id": "frame-069",
+      "name": "F04 · Phần thưởng — Ưu đãi của tôi",
+      "nodeId": "1:195"
+    },
+    {
+      "id": "frame-070",
+      "name": "G01 · Hồ sơ — Hồ sơ cá nhân",
+      "nodeId": "1:119"
+    },
+    {
+      "id": "frame-071",
+      "name": "G02 · Hồ sơ — Chỉnh sửa hồ sơ",
+      "nodeId": "1:78"
+    },
+    {
+      "id": "frame-072",
+      "name": "G03 · Hồ sơ — Yêu thích",
+      "nodeId": "1:2"
+    },
+    {
+      "id": "frame-073",
+      "name": "G03A — Yêu thích — Chưa lưu địa điểm",
+      "nodeId": "27:8955"
+    },
+    {
+      "id": "frame-074",
+      "name": "Home · Trước khi tạo lịch mới",
+      "nodeId": "1:1487"
+    }
+  ]
+}
