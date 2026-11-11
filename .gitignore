@@ -1,7 +1,11 @@
-node_modules/
-.expo/
-dist/
-web-build/
 .tmp/
-*.log
-docs/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.env
+.env.*
+!.env.example
