@@ -3,11 +3,10 @@ import { Image, Pressable, ScrollView, View } from 'react-native';
 import { Button, Card, Label, PlacePhoto, Screen, SectionTitle, Tabs } from '../../../components';
 import { images } from '../../../config/images';
 import { colors } from '../../../theme';
-import { places } from '../../explore/repositories/placeRepository';
 import { useHomeViewModel } from '../viewmodels/useHomeViewModel';
 
 export function HomeScreen() {
-  const { app, navigate, trips, name, startCreate } = useHomeViewModel();
+  const { navigate, tab, name, itineraries, startCreate, recommendedPlaces } = useHomeViewModel();
 
   return (
     <Screen bottom={<Tabs active="home" />} tabs>
@@ -28,7 +27,7 @@ export function HomeScreen() {
           </Label>
         </View>
         <Pressable
-          onPress={() => app.tab('profile')}
+          onPress={() => tab('profile')}
           style={{
             backgroundColor: colors.warm,
             width: 42,
@@ -77,13 +76,13 @@ export function HomeScreen() {
             Lịch trình sắp tới
           </Label>
           <Label size={12} color={colors.primaryDark}>
-            {trips.length} lịch
+            {itineraries.length} lịch
           </Label>
         </View>
-        {trips.map((trip, index) => (
+        {itineraries.map((itinerary, index) => (
           <Pressable
-            key={trip.id}
-            onPress={() => navigate('tripDetail', trip.id)}
+            key={itinerary.id}
+            onPress={() => navigate('itineraryDetail', itinerary.id)}
             style={{
               flexDirection: 'row',
               justifyContent: 'space-between',
@@ -95,27 +94,24 @@ export function HomeScreen() {
             }}
           >
             <View>
-              <Label weight="bold">{trip.title}</Label>
+              <Label weight="bold">{itinerary.title}</Label>
               <Label size={12} color={colors.muted}>
-                {trip.date} · {trip.duration} ngày · {trip.stops.length} điểm đến · {trip.pace}
+                {itinerary.date} · {itinerary.duration} ngày · {itinerary.stops.length} điểm đến ·{' '}
+                {itinerary.pace}
               </Label>
             </View>
             <Ionicons name="arrow-forward-circle" size={26} color={colors.primaryDark} />
           </Pressable>
         ))}
       </Card>
-      <SectionTitle
-        title="Gợi ý địa điểm"
-        action="Xem tất cả"
-        onAction={() => app.tab('explore')}
-      />
+      <SectionTitle title="Gợi ý địa điểm" action="Xem tất cả" onAction={() => tab('explore')} />
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ gap: 12 }}
         style={{ flexGrow: 0, marginBottom: 8 }}
       >
-        {places.slice(0, 4).map((place) => (
+        {recommendedPlaces.map((place) => (
           <Pressable
             key={place.id}
             onPress={() => navigate('place', place.id)}
@@ -139,11 +135,7 @@ export function HomeScreen() {
           </Pressable>
         ))}
       </ScrollView>
-      <SectionTitle
-        title="Thử thách di sản"
-        action="Xem thử thách"
-        onAction={() => app.tab('game')}
-      />
+      <SectionTitle title="Thử thách di sản" action="Xem thử thách" onAction={() => tab('game')} />
       <Card onPress={() => navigate('gameIntro')}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
           <Image source={images.chamArtifact} style={{ width: 60, height: 60, borderRadius: 10 }} />

@@ -1,58 +1,67 @@
-import type { Trip } from '../types';
+import { createStore } from '../../../lib/state/createStore';
+import { defaultItinerary, initialItinerary } from '../data/demoItineraries';
+import {
+  cloneItinerary,
+  createSavedItinerary,
+  replaceOutdoorStop,
+  updateItinerary,
+} from '../models/itinerary';
+import type { Itinerary } from '../types';
 
-export const defaultTrip: Trip = {
-  id: 'heritage-day',
-  title: 'Một ngày di sản Đà Nẵng',
-  date: '15/11/2026',
-  duration: 1,
-  pace: 'Thư thả',
-  saved: false,
-  stops: [
-    { placeId: 'cham', start: '09:00', end: '10:30' },
-    { placeId: 'son-tra', start: '14:00', end: '16:00' },
-    { placeId: 'cau-rong', start: '17:00', end: '18:00' },
-  ],
-};
-
-export const initialTrip: Trip = {
-  id: 'hoi-an',
-  title: 'Hội An trong tôi',
-  date: '19/11/2026',
-  duration: 1,
-  pace: 'Thư thả',
-  saved: true,
-  stops: [
-    { placeId: 'chua-cau', start: '09:00', end: '10:30' },
-    { placeId: 'tan-ky', start: '14:00', end: '15:30' },
-    { placeId: 'hoai-river', start: '17:00', end: '18:30' },
-  ],
-};
-
-export const hoiAnNames: Record<string, string> = {
-  'chua-cau': 'Chùa Cầu',
-  'tan-ky': 'Nhà cổ Tấn Ký',
-  'hoai-river': 'Bờ sông Hoài',
-};
-
-export const cloneTrip = (trip: Trip): Trip => ({
-  ...trip,
-  stops: trip.stops.map((stop) => ({ ...stop })),
-});
-export const createSavedTrip = (trip: Trip): Trip => ({
-  ...trip,
-  id: `trip-${Date.now()}`,
-  saved: true,
-});
-export const updateTrip = (trips: Trip[], id: string, draft: Trip): Trip[] =>
-  trips.map((trip) => (trip.id === id ? { ...draft, id, saved: true } : trip));
-export const replaceOutdoorStop = (trips: Trip[], id: string): Trip[] =>
-  trips.map((trip) =>
-    trip.id === id
-      ? {
-          ...trip,
-          stops: trip.stops.map((stop) =>
-            stop.placeId === 'son-tra' ? { ...stop, placeId: 'bao-tang-dn' } : stop,
-          ),
-        }
-      : trip,
-  );
+export function createItineraryRepository(initial?: Itinerary[]) {
+  const store = createStore({
+    itineraries: Array.isArray(initial) ? initial : [cloneItinerary(initialItinerary)],
+    draft: cloneItinerary(defaultItinerary),
+    editingId: null as string | null,
+  });
+  return {
+    getSnapshot: store.getSnapshot,
+    subscribe: store.subscribe,
+    actions: {
+      setDraft: (draft: Itinerary) => store.update((state) => ({ ...state, draft })),
+      startCreate() {
+        store.update((state) => ({
+          ...state,
+          editingId: null,
+          draft: cloneItinerary(defaultItinerary),
+        }));
+      },
+      saveDraft(): Itinerary {
+        const saved = createSavedItinerary(store.getSnapshot().draft);
+        store.update((state) => ({
+          ...state,
+          itineraries: [saved, ...state.itineraries],
+          draft: saved,
+        }));
+        return saved;
+      },
+      startEdit(id: string): boolean {
+        const found = store.getSnapshot().itineraries.find((item) => item.id === id);
+        if (!found) return false;
+        store.update((state) => ({ ...state, editingId: id, draft: cloneItinerary(found) }));
+        return true;
+      },
+      saveEdit(): string | null {
+        const { editingId, draft } = store.getSnapshot();
+        if (!editingId) return null;
+        store.update((state) => ({
+          ...state,
+          itineraries: updateItinerary(state.itineraries, editingId, draft),
+        }));
+        return editingId;
+      },
+      replaceSonTra(id?: string): string | null {
+        const { itineraries } = store.getSnapshot();
+        const found =
+          itineraries.find((item) => item.id === id) ??
+          itineraries.find((item) => item.id !== 'hoi-an');
+        if (!found) return null;
+        store.update((state) => ({
+          ...state,
+          itineraries: replaceOutdoorStop(state.itineraries, found.id),
+        }));
+        return found.id;
+      },
+    },
+  };
+}

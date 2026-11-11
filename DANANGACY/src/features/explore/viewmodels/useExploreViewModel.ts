@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react';
-import { useApp } from '../../../providers/AppProvider';
-import { getPlace, places } from '../repositories/placeRepository';
+import { useNavigationViewModel } from '../../../navigation/NavigationProvider';
+import { useFavoritesModel } from '../providers/FavoritesProvider';
+import { placeRepository } from '../repositories/placeRepository';
 
 export function useExploreViewModel() {
-  const app = useApp();
-  const { route, navigate, back, favorites, toggleFavorite } = app;
+  const { route, navigate, back } = useNavigationViewModel();
+  const { favorites, toggleFavorite } = useFavoritesModel();
+  const places = placeRepository.list();
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState('Tất cả');
   const visible = useMemo(
@@ -19,10 +21,16 @@ export function useExploreViewModel() {
     [query, filter],
   );
 
-  const place = getPlace(route.id ?? 'cham');
+  const place = placeRepository.getById(route.id ?? 'cham');
   const saved = favorites.includes(place.id);
 
+  const mapPlaces = places.filter((place) => filter === 'Tất cả' || place.category === filter);
+  const featuredPlace = places[0];
+
   return {
+    mapPlaces,
+    featuredPlace,
+
     place,
     saved,
     route,

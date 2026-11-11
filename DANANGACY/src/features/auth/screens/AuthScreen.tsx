@@ -18,7 +18,12 @@ import { useAuthViewModel } from '../viewmodels/useAuthViewModel';
 
 export function AuthScreen() {
   const {
-    app,
+    tab,
+    submitLogin,
+    submitRegistration,
+    requestResetCode,
+    verifyCode,
+    submitPasswordReset,
     route,
     navigate,
     back,
@@ -35,11 +40,6 @@ export function AuthScreen() {
     setCode,
     showPassword,
     setShowPassword,
-    submitLogin,
-    submitRegistration,
-    requestResetCode,
-    verifyCode,
-    submitPasswordReset,
   } = useAuthViewModel();
 
   if (route.name === 'welcome')
@@ -48,7 +48,7 @@ export function AuthScreen() {
         bottom={
           <View style={{ gap: 8 }}>
             <Button title="Bắt đầu" onPress={() => navigate('login')} />
-            <Button title="Khám phá ngay" kind="secondary" onPress={() => app.tab('explore')} />
+            <Button title="Khám phá ngay" kind="secondary" onPress={() => tab('explore')} />
           </View>
         }
       >

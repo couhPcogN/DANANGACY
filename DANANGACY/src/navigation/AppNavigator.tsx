@@ -5,7 +5,7 @@ import { GameScreen } from '../features/game/screens/GameScreen';
 import { HomeScreen } from '../features/home/screens/HomeScreen';
 import { ItineraryScreen } from '../features/itinerary/screens/ItineraryScreen';
 import { ProfileScreen } from '../features/profile/screens/ProfileScreen';
-import { useApp } from '../providers/AppProvider';
+import { useNavigationViewModel } from './NavigationProvider';
 import type { RouteName } from './types';
 
 const routeScreens: Record<RouteName, ComponentType> = {
@@ -20,14 +20,14 @@ const routeScreens: Record<RouteName, ComponentType> = {
   map: ExploreScreen,
   place: ExploreScreen,
   itinerary: ItineraryScreen,
-  tripInfo: ItineraryScreen,
-  tripPreferences: ItineraryScreen,
-  tripPlaces: ItineraryScreen,
-  tripReview: ItineraryScreen,
-  tripSaved: ItineraryScreen,
-  tripDetail: ItineraryScreen,
-  tripEdit: ItineraryScreen,
-  tripEditPlaces: ItineraryScreen,
+  itineraryInfo: ItineraryScreen,
+  itineraryPreferences: ItineraryScreen,
+  itineraryPlaces: ItineraryScreen,
+  itineraryReview: ItineraryScreen,
+  itinerarySaved: ItineraryScreen,
+  itineraryDetail: ItineraryScreen,
+  itineraryEdit: ItineraryScreen,
+  itineraryEditPlaces: ItineraryScreen,
   weather: ItineraryScreen,
   replacement: ItineraryScreen,
   replacementConfirm: ItineraryScreen,
@@ -46,7 +46,7 @@ const routeScreens: Record<RouteName, ComponentType> = {
 };
 
 export function AppNavigator() {
-  const { route } = useApp();
+  const { route } = useNavigationViewModel();
   const Screen = routeScreens[route.name];
   return <Screen />;
 }

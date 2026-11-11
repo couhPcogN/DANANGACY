@@ -13,12 +13,18 @@ import {
   Tabs,
 } from '../../../components';
 import { colors } from '../../../theme';
-import { getPlace } from '../../explore/repositories/placeRepository';
 import { useProfileViewModel } from '../viewmodels/useProfileViewModel';
 
 export function ProfileScreen() {
   const {
-    app,
+    tab,
+    signedIn,
+    logout,
+    rewardRedeemed,
+    quizCompleted,
+    favoriteItems,
+    openSection,
+    saveProfile,
     route,
     back,
     navigate,
@@ -26,7 +32,7 @@ export function ProfileScreen() {
     email,
     favorites,
     toggleFavorite,
-    trips,
+    itineraries,
     points,
     draftName,
     setDraftName,
@@ -34,7 +40,6 @@ export function ProfileScreen() {
     setDraftEmail,
     draftPhone,
     setDraftPhone,
-    saveProfile,
   } = useProfileViewModel();
 
   if (route.name === 'profile')
@@ -87,29 +92,27 @@ export function ProfileScreen() {
               [
                 'calendar-outline',
                 'Lịch trình của tôi',
-                `${trips.length} chuyến đi sắp tới`,
+                `${itineraries.length} chuyến đi sắp tới`,
                 'itinerary',
               ],
               ['heart-outline', 'Yêu thích', `${favorites.length} địa điểm đã lưu`, 'favorites'],
               [
                 'ticket-outline',
                 'Ưu đãi của tôi',
-                `${app.rewardRedeemed ? 1 : 0} ưu đãi mô phỏng còn hiệu lực`,
+                `${rewardRedeemed ? 1 : 0} ưu đãi mô phỏng còn hiệu lực`,
                 'myRewards',
               ],
               [
                 'trophy-outline',
                 'Thử thách di sản',
-                `Hiện vật Chăm Pa · ${app.quizCompleted ? 'Đã hoàn thành' : 'Đang thực hiện'}`,
+                `Hiện vật Chăm Pa · ${quizCompleted ? 'Đã hoàn thành' : 'Đang thực hiện'}`,
                 'game',
               ],
             ] as const
           ).map(([icon, title, description, target]) => (
             <Pressable
               key={title}
-              onPress={() =>
-                target === 'itinerary' || target === 'game' ? app.tab(target) : navigate(target)
-              }
+              onPress={() => openSection(target)}
               style={{ flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 58 }}
             >
               <Ionicons name={icon} size={21} color={colors.ink} />
@@ -127,7 +130,7 @@ export function ProfileScreen() {
         <Label size={12} color={colors.muted} style={{ textAlign: 'center' }}>
           DANANGACY · Chạm di sản, trọn hành trình
         </Label>
-        {!app.signedIn ? (
+        {!signedIn ? (
           <Button
             title="Đăng nhập để lưu tài khoản"
             kind="outline"
@@ -186,10 +189,10 @@ export function ProfileScreen() {
           Thông tin được dùng để quản lý tài khoản và lưu hành trình của bạn. Các thay đổi chỉ được
           cập nhật khi bạn lưu.
         </InfoBanner>
-        {app.signedIn ? (
+        {signedIn ? (
           <Pressable
             accessibilityRole="button"
-            onPress={app.logout}
+            onPress={logout}
             style={{ alignSelf: 'center', padding: 14, marginTop: 12 }}
           >
             <Label size={13} color={colors.primaryDark}>
@@ -205,11 +208,11 @@ export function ProfileScreen() {
       <Header title="Yêu thích" subtitle={`${favorites.length} địa điểm đã lưu`} onBack={back} />
       <SectionTitle title="Các địa điểm yêu thích" />
       {favorites.length ? (
-        favorites.map((id) => (
+        favoriteItems.map(({ id, place }) => (
           <View key={id} style={{ position: 'relative' }}>
-            <PlaceRow place={getPlace(id)} onPress={() => navigate('place', id)} />
+            <PlaceRow place={place} onPress={() => navigate('place', id)} />
             <Pressable
-              accessibilityLabel={`Bỏ lưu ${getPlace(id).name}`}
+              accessibilityLabel={`Bỏ lưu ${place.name}`}
               onPress={() => toggleFavorite(id)}
               style={{
                 position: 'absolute',
@@ -235,7 +238,7 @@ export function ProfileScreen() {
       </InfoBanner>
       <Button
         title="Xem lịch trình của tôi"
-        onPress={() => app.tab('itinerary')}
+        onPress={() => tab('itinerary')}
         style={{ marginTop: 10 }}
       />
     </Screen>

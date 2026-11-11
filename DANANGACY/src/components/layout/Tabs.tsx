@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, View } from 'react-native';
 import type { TabName } from '../../navigation/types';
-import { useApp } from '../../providers/AppProvider';
+import { useNavigationViewModel } from '../../navigation/NavigationProvider';
 import { colors } from '../../theme';
 
 import { Label } from '../ui/Label';
@@ -28,7 +28,7 @@ const tabItems: { name: TabName; label: string; icon: IconName; activeIcon: Icon
 type TabsProps = { active: TabName };
 
 export function Tabs({ active }: TabsProps) {
-  const { tab } = useApp();
+  const { tab } = useNavigationViewModel();
   return (
     <View style={styles.tabs}>
       {tabItems.map((item) => (

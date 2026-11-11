@@ -1,27 +1,34 @@
 import { useState } from 'react';
-import { useApp } from '../../../providers/AppProvider';
-import { quiz } from '../repositories/gameRepository';
+import { useNavigationViewModel } from '../../../navigation/NavigationProvider';
+import { notify } from '../../../utils/notify';
+import { useGameModel } from '../providers/GameProvider';
+import { gameRepository } from '../repositories/gameRepository';
 
 export function useGameViewModel() {
-  const app = useApp();
+  const { route, navigate, back, tab } = useNavigationViewModel();
+  const model = useGameModel();
   const {
-    route,
-    navigate,
-    back,
     quizIndex,
     quizSelected,
     quizConfirmed,
     quizAnswers,
     quizCompleted,
     points,
-    startQuiz,
     selectAnswer,
     confirmAnswer,
-    nextQuestion,
     rewardRedeemed,
-    redeemReward,
-    notify,
-  } = app;
+  } = model;
+  const quiz = gameRepository.getQuestions();
+  const startQuiz = () => {
+    model.startQuiz();
+    navigate('quiz');
+  };
+  const nextQuestion = () => {
+    if (model.nextQuestion()) navigate('quizResult');
+  };
+  const redeemReward = () => {
+    if (model.redeemReward()) navigate('redeemed');
+  };
   const [gameTab, setGameTab] = useState<'challenge' | 'rewards'>(
     route.name === 'rewards' ? 'rewards' : 'challenge',
   );
@@ -41,9 +48,28 @@ export function useGameViewModel() {
         ? notify('Bạn chưa đủ 100 điểm.')
         : redeemReward();
 
+  const names = gameRepository.getChallengeNames();
+  const selectGameTab = (value: 'challenge' | 'rewards') => {
+    if (value === 'challenge' && route.name === 'rewards') tab('game');
+    else setGameTab(value);
+  };
+  const openChallenge = (index: number) => {
+    if (index === 0) navigate(quizCompleted ? 'quizResult' : 'gameIntro');
+    else notify('Thử thách này sẽ có trong bản tiếp theo.');
+  };
+  const continueChallenge = () => (quizCompleted ? navigate('quizResult') : startQuiz());
+  const submitAnswer = () => (quizConfirmed ? nextQuestion() : confirmAnswer());
+
   return {
+    tab,
+    quiz,
+    names,
+    selectGameTab,
+    openChallenge,
+    continueChallenge,
+    submitAnswer,
+
     redeemSelectedReward,
-    app,
     route,
     navigate,
     back,
@@ -53,13 +79,9 @@ export function useGameViewModel() {
     quizAnswers,
     quizCompleted,
     points,
-    startQuiz,
     selectAnswer,
-    confirmAnswer,
-    nextQuestion,
     rewardRedeemed,
     notify,
-    setGameTab,
     visibleGameTab,
     voucherFilter,
     setVoucherFilter,

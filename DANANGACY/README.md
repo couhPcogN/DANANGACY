@@ -18,6 +18,7 @@ Mở Expo Go và quét mã QR, hoặc chọn Android Emulator nếu máy đủ d
 ```powershell
 npm run typecheck
 npm run format:check
+npm test
 npm run export:web
 npm run export:android
 ```
@@ -44,16 +45,19 @@ src/
 │   ├── ui/                     # Button, Field, Card, Label…
 │   └── layout/                 # Screen, Header, Tabs
 ├── navigation/                 # Route types, stack và AppNavigator
-├── providers/                  # Font, safe area, ghép state và khôi phục dữ liệu
+├── providers/                  # Composition, khởi tạo và lưu snapshot
+├── lib/state/                  # Observable store độc lập với React
 ├── lib/storage/                # AsyncStorage và repository lưu trạng thái demo
 ├── config/images.ts            # Tham chiếu ảnh cục bộ
 ├── theme/                      # Màu sắc, khoảng cách, bo góc
 └── utils/                      # Thông báo dùng chung
 ```
 
-Mỗi tính năng đặt giao diện trong `screens/`, component riêng trong `components/`, state và thao tác màn hình trong `viewmodels/`, dữ liệu mẫu và thao tác dữ liệu trong `repositories/`. `types.ts` và `schemas.ts` được thêm ở những tính năng cần kiểu dữ liệu hoặc kiểm tra nghiệp vụ. Không tạo các lớp rỗng cho tính năng chưa cần chúng.
+Mỗi tính năng đặt giao diện trong `screens/`, component riêng trong `components/`, trạng thái form và thao tác màn hình trong `viewmodels/`, dữ liệu mẫu trong `data/`, các thao tác dữ liệu trong `repositories/`. `providers/` của tính năng cấp model cho ViewModel. `models/`, `types.ts` và `schemas.ts` được thêm khi cần phép biến đổi dữ liệu, kiểu hoặc kiểm tra đầu vào.
 
-Luồng xử lý: **Screen → ViewModel → Repository**. Các hook `use…State` giữ trạng thái dùng chung của từng tính năng; các hook `use…ViewModel` quản lý form, bộ lọc và thao tác của màn hình. `AppProvider` ghép các hook này, khôi phục và lưu trạng thái qua `appStateRepository`. Dữ liệu vẫn dùng khóa `danangacy.demo.v1` và định dạng cũ.
+Luồng MVVM: **View → ViewModel → Model/Repository**. Screen không đọc repository hoặc sửa bộ sưu tập trực tiếp. Mỗi tính năng có repository và model state riêng, được quan sát bằng `useSyncExternalStore`; ViewModel điều phối form và navigation. `AppProvider` chỉ khởi tạo các provider và phối hợp lưu snapshot qua `appStateRepository`, không còn `useApp()` chứa toàn bộ state. Dữ liệu dùng khóa `danangacy.demo.v1` với trường danh sách `itineraries`; bản lưu cũ có trường `trips` vẫn được đọc và chuyển đổi.
+
+Xem [mô tả MVVM chi tiết](../docs/MOBILE_MVVM.md) để hiểu trách nhiệm từng lớp, luồng lưu dữ liệu và cách thêm tính năng.
 
 Bản hiện tại giữ bộ điều hướng stack sẵn có trong `src/navigation`, chưa chuyển sang Expo Router. Các màn hình cùng tính năng tiếp tục dùng chung vòng đời component để giữ dữ liệu form và hành vi quay lại. Font, JSX, style và ảnh giữ nguyên. Ứng dụng hiện dùng dữ liệu demo, chưa có API client hoặc cơ chế đăng nhập backend; phiên demo được lưu cùng trạng thái ứng dụng, không lưu mật khẩu.
 

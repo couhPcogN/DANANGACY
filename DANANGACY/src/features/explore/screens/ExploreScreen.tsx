@@ -14,11 +14,14 @@ import {
   Tabs,
 } from '../../../components';
 import { colors } from '../../../theme';
-import { places } from '../../explore/repositories/placeRepository';
 import { useExploreViewModel } from '../viewmodels/useExploreViewModel';
 
 export function ExploreScreen() {
   const {
+    mapPlaces,
+    featuredPlace,
+    place,
+    saved,
     route,
     navigate,
     back,
@@ -28,8 +31,6 @@ export function ExploreScreen() {
     filter,
     setFilter,
     visible,
-    place,
-    saved,
   } = useExploreViewModel();
 
   if (route.name === 'explore')
@@ -104,30 +105,28 @@ export function ExploreScreen() {
               transform: [{ rotate: '16deg' }],
             }}
           />
-          {places
-            .filter((p) => filter === 'Tất cả' || p.category === filter)
-            .map((p, i) => (
-              <Pressable
-                key={p.id}
-                onPress={() => navigate('place', p.id)}
-                style={{
-                  position: 'absolute',
-                  left: `${[18, 72, 35, 78, 20][i]}%`,
-                  top: `${[34, 14, 57, 78, 12][i]}%`,
-                  alignItems: 'center',
-                }}
-              >
-                <Ionicons name="location" size={29} color={colors.primary} />
-                <Label size={10} weight="bold">
-                  {p.name.replace('Bảo tàng Điêu khắc ', 'BT ')}
-                </Label>
-              </Pressable>
-            ))}
+          {mapPlaces.map((p, i) => (
+            <Pressable
+              key={p.id}
+              onPress={() => navigate('place', p.id)}
+              style={{
+                position: 'absolute',
+                left: `${[18, 72, 35, 78, 20][i]}%`,
+                top: `${[34, 14, 57, 78, 12][i]}%`,
+                alignItems: 'center',
+              }}
+            >
+              <Ionicons name="location" size={29} color={colors.primary} />
+              <Label size={10} weight="bold">
+                {p.name.replace('Bảo tàng Điêu khắc ', 'BT ')}
+              </Label>
+            </Pressable>
+          ))}
         </View>
         <Label size={12} color={colors.muted} style={{ marginBottom: 12 }}>
           Bản đồ sơ đồ · Vị trí mang tính minh họa
         </Label>
-        <PlaceRow place={places[0]} onPress={() => navigate('place', 'cham')} />
+        <PlaceRow place={featuredPlace} onPress={() => navigate('place', 'cham')} />
       </Screen>
     );
 

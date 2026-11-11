@@ -16,15 +16,19 @@ import {
 } from '../../../components';
 import { images } from '../../../config/images';
 import { colors } from '../../../theme';
-import { quiz } from '../../game/repositories/gameRepository';
 import { RewardsContent } from '../components/RewardsContent';
 import { useGameViewModel } from '../viewmodels/useGameViewModel';
 
-const names = ['Hiện vật Chăm Pa', 'Dấu ấn bên sông Hàn', 'Di sản phố cổ Hội An'];
-
 export function GameScreen() {
   const {
-    app,
+    tab,
+    quiz,
+    names,
+    selectGameTab,
+    openChallenge,
+    continueChallenge,
+    submitAnswer,
+    redeemSelectedReward,
     route,
     navigate,
     back,
@@ -34,20 +38,15 @@ export function GameScreen() {
     quizAnswers,
     quizCompleted,
     points,
-    startQuiz,
     selectAnswer,
-    confirmAnswer,
-    nextQuestion,
     rewardRedeemed,
     notify,
-    setGameTab,
     visibleGameTab,
     voucherFilter,
     setVoucherFilter,
     current,
     score,
     displayQuestion,
-    redeemSelectedReward,
   } = useGameViewModel();
 
   if (route.name === 'game' || route.name === 'rewards')
@@ -65,13 +64,13 @@ export function GameScreen() {
           <Button
             title="Thử thách"
             kind={visibleGameTab === 'challenge' ? 'secondary' : 'outline'}
-            onPress={() => (route.name === 'rewards' ? app.tab('game') : setGameTab('challenge'))}
+            onPress={() => selectGameTab('challenge')}
             style={{ flex: 1, minHeight: 46 }}
           />
           <Button
             title="Phần thưởng"
             kind={visibleGameTab === 'rewards' ? 'secondary' : 'outline'}
-            onPress={() => setGameTab('rewards')}
+            onPress={() => selectGameTab('rewards')}
             style={{ flex: 1, minHeight: 46 }}
           />
         </View>
@@ -115,11 +114,7 @@ export function GameScreen() {
                 </View>
                 <Button
                   title={index === 0 ? (quizCompleted ? 'Xem kết quả' : 'Tiếp tục') : 'Bắt đầu'}
-                  onPress={() =>
-                    index === 0
-                      ? navigate(quizCompleted ? 'quizResult' : 'gameIntro')
-                      : notify('Thử thách này sẽ có trong bản tiếp theo.')
-                  }
+                  onPress={() => openChallenge(index)}
                   style={{ marginTop: 7, minHeight: 40 }}
                 />
               </Card>
@@ -142,7 +137,7 @@ export function GameScreen() {
           <Button
             title={quizCompleted ? 'Xem kết quả' : 'Tiếp tục thử thách'}
             icon="play-outline"
-            onPress={() => (quizCompleted ? navigate('quizResult') : startQuiz())}
+            onPress={continueChallenge}
           />
         }
       >
@@ -195,7 +190,7 @@ export function GameScreen() {
                 : 'Xác nhận đáp án'
             }
             disabled={!quizConfirmed && quizSelected === null}
-            onPress={quizConfirmed ? nextQuestion : confirmAnswer}
+            onPress={submitAnswer}
           />
         }
       >
@@ -203,7 +198,7 @@ export function GameScreen() {
           title="Hiện vật Chăm Pa"
           onBack={back}
           actionIcon="close-outline"
-          action={() => app.tab('game')}
+          action={() => tab('game')}
         />
         <Label size={12} weight="bold" color={colors.primaryDark}>
           Câu {quizIndex + 1}/5 · Hiện vật Chăm Pa
@@ -257,15 +252,11 @@ export function GameScreen() {
               icon="book-outline"
               onPress={() => navigate('quizAnswers')}
             />
-            <Button
-              title="Về danh sách thử thách"
-              kind="secondary"
-              onPress={() => app.tab('game')}
-            />
+            <Button title="Về danh sách thử thách" kind="secondary" onPress={() => tab('game')} />
           </View>
         }
       >
-        <Header title="Kết quả" onBack={() => app.tab('game')} />
+        <Header title="Kết quả" onBack={() => tab('game')} />
         <View style={{ alignItems: 'center', marginTop: 22 }}>
           <View
             style={{

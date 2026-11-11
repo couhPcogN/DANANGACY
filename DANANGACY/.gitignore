@@ -5,3 +5,4 @@ web-build/
 .tmp/
 *.log
 docs/
+.test/

@@ -5,11 +5,13 @@ const timeValue = (time: string) =>
     ? Number(time.slice(0, 2)) * 60 + Number(time.slice(3))
     : -1;
 export function validateStops(stops: Stop[]): string | null {
+  if (stops.length < 1 || stops.length > 8) return 'Lịch trình phải có từ 1 đến 8 điểm dừng.';
   for (let i = 0; i < stops.length; i++) {
     const start = timeValue(stops[i].start),
       end = timeValue(stops[i].end);
     if (start < 0 || end < 0 || start >= end)
       return 'Giờ bắt đầu phải sớm hơn giờ kết thúc và đúng định dạng HH:mm.';
+    if (end - start < 30) return 'Mỗi điểm dừng phải có thời lượng ít nhất 30 phút.';
     if (start < 360 || end > 1320) return 'Khung giờ nằm ngoài giờ tham quan gợi ý 06:00–22:00.';
     if (
       stops.some(

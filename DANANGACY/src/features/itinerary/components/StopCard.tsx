@@ -2,10 +2,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { View } from 'react-native';
 import { Card, Label } from '../../../components';
 import { colors } from '../../../theme';
-import type { Stop } from '../types';
-import { getStopName } from '../utils/getStopName';
+import type { StopView } from '../types';
 
-type StopCardProps = { stop: Stop; onPress?: () => void; editing?: boolean };
+type StopCardProps = { stop: StopView; onPress?: () => void; editing?: boolean };
 
 export function StopCard({ stop, onPress, editing = false }: StopCardProps) {
   return (
@@ -27,12 +26,10 @@ export function StopCard({ stop, onPress, editing = false }: StopCardProps) {
         <Ionicons name="location-outline" size={22} color={colors.ink} />
         <View>
           <Label size={14} weight="bold">
-            {getStopName(stop.placeId)}
+            {stop.name}
           </Label>
           <Label size={12} color={colors.muted}>
-            {stop.placeId === 'cham' || stop.placeId === 'bao-tang-dn'
-              ? 'Trong nhà · Tìm hiểu di sản'
-              : 'Ngoài trời · Khám phá cảnh quan'}
+            {stop.description}
           </Label>
         </View>
       </View>

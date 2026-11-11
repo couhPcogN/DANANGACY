@@ -17,22 +17,35 @@ import {
 } from '../../../components';
 import { images } from '../../../config/images';
 import { colors } from '../../../theme';
-import { getPlace, places } from '../../explore/repositories/placeRepository';
 import { StopCard } from '../components/StopCard';
-import { TripStopsEditor } from '../components/TripStopsEditor';
-import { TripSummary } from '../components/TripSummary';
-import { getStopName } from '../utils/getStopName';
+import { ItineraryStopsEditor } from '../components/ItineraryStopsEditor';
+import { ItinerarySummary } from '../components/ItinerarySummary';
 import { useItineraryViewModel } from '../viewmodels/useItineraryViewModel';
 
 export function ItineraryScreen() {
   const {
-    app,
+    tab,
+    availablePlaces,
+    favoritePlaces,
+    draftStopViews,
+    selectedStopViews,
+    hasWeatherWarning,
+    weatherPlace,
+    replacementPlace,
+    museumPlace,
+    setFirstStart,
+    setLastEnd,
+    togglePlace,
+    addFavoritePlace,
+    reviewDraft,
+    continueFromInfo,
+    submitDraft,
+    submitEdit,
     route,
     back,
     navigate,
-    trips,
+    itineraries,
     draft,
-    setDraft,
     startCreate,
     startEdit,
     cancelEdit,
@@ -43,11 +56,8 @@ export function ItineraryScreen() {
     search,
     setSearch,
     editingTime,
-    selectedTrip,
-    setTrip,
-    continueFromInfo,
-    submitDraft,
-    submitEdit,
+    selectedItinerary,
+    setItinerary,
     beginTimeEdit,
     beginSavedTimeEdit,
     timeEditor,
@@ -59,7 +69,7 @@ export function ItineraryScreen() {
         <Header title="Lịch trình của tôi" subtitle="Lưu giữ những hành trình đáng nhớ" />
         <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}>
           <Pill
-            title={`Sắp tới · ${trips.length}`}
+            title={`Sắp tới · ${itineraries.length}`}
             selected={filter === 'Sắp tới'}
             onPress={() => setFilter('Sắp tới')}
           />
@@ -70,17 +80,17 @@ export function ItineraryScreen() {
           />
         </View>
         {filter === 'Sắp tới' ? (
-          trips.map((trip) => (
-            <Card key={trip.id}>
-              <PlacePhoto source={images.daNang} name={trip.title} height={150} />
+          itineraries.map((itinerary) => (
+            <Card key={itinerary.id}>
+              <PlacePhoto source={images.daNang} name={itinerary.title} height={150} />
               <View style={{ marginTop: 10, marginBottom: 7 }}>
                 <Pill title="Sắp tới" selected />
               </View>
-              <TripSummary trip={trip} />
+              <ItinerarySummary itinerary={itinerary} />
               <Button
                 title="Xem lịch trình"
                 kind="secondary"
-                onPress={() => navigate('tripDetail', trip.id)}
+                onPress={() => navigate('itineraryDetail', itinerary.id)}
               />
             </Card>
           ))
@@ -102,7 +112,7 @@ export function ItineraryScreen() {
       </Screen>
     );
 
-  if (route.name === 'tripInfo')
+  if (route.name === 'itineraryInfo')
     return (
       <Screen bottom={<Button title="Tiếp tục" icon="arrow-forward" onPress={continueFromInfo} />}>
         <Header title="Thông tin chuyến đi" onBack={back} />
@@ -119,13 +129,13 @@ export function ItineraryScreen() {
         <Field
           label="Tên lịch trình"
           value={draft.title}
-          onChangeText={(v) => setTrip({ title: v })}
+          onChangeText={(v) => setItinerary({ title: v })}
           icon="pencil-outline"
         />
         <Field
           label="Ngày khởi hành (DD/MM/YYYY)"
           value={draft.date}
-          onChangeText={(v) => setTrip({ date: v })}
+          onChangeText={(v) => setItinerary({ date: v })}
           icon="calendar-outline"
         />
         <View style={{ flexDirection: 'row', gap: 12 }}>
@@ -133,26 +143,14 @@ export function ItineraryScreen() {
             <Field
               label="Giờ bắt đầu"
               value={draft.stops[0]?.start ?? '09:00'}
-              onChangeText={(v) =>
-                setDraft({
-                  ...draft,
-                  stops: draft.stops.map((s, i) => (i === 0 ? { ...s, start: v } : s)),
-                })
-              }
+              onChangeText={setFirstStart}
             />
           </View>
           <View style={{ flex: 1 }}>
             <Field
               label="Giờ kết thúc"
               value={draft.stops.at(-1)?.end ?? '18:00'}
-              onChangeText={(v) =>
-                setDraft({
-                  ...draft,
-                  stops: draft.stops.map((s, i) =>
-                    i === draft.stops.length - 1 ? { ...s, end: v } : s,
-                  ),
-                })
-              }
+              onChangeText={setLastEnd}
             />
           </View>
         </View>
@@ -163,7 +161,7 @@ export function ItineraryScreen() {
               key={n}
               title={`${n} ngày`}
               selected={draft.duration === n}
-              onPress={() => setTrip({ duration: n })}
+              onPress={() => setItinerary({ duration: n })}
             />
           ))}
         </View>
@@ -173,11 +171,15 @@ export function ItineraryScreen() {
       </Screen>
     );
 
-  if (route.name === 'tripPreferences')
+  if (route.name === 'itineraryPreferences')
     return (
       <Screen
         bottom={
-          <Button title="Tiếp tục" icon="arrow-forward" onPress={() => navigate('tripPlaces')} />
+          <Button
+            title="Tiếp tục"
+            icon="arrow-forward"
+            onPress={() => navigate('itineraryPlaces')}
+          />
         }
       >
         <Header title="Sở thích & nhịp độ" onBack={back} />
@@ -210,7 +212,7 @@ export function ItineraryScreen() {
         {(['Thư thả', 'Cân bằng', 'Năng động'] as const).map((p, i) => (
           <Card
             key={p}
-            onPress={() => setTrip({ pace: p })}
+            onPress={() => setItinerary({ pace: p })}
             style={
               draft.pace === p
                 ? { backgroundColor: colors.warm, borderColor: colors.warmBorder }
@@ -238,19 +240,11 @@ export function ItineraryScreen() {
       </Screen>
     );
 
-  if (route.name === 'tripPlaces') {
-    const shown = places.filter((p) =>
-      p.name.toLocaleLowerCase('vi').includes(search.toLocaleLowerCase('vi')),
-    );
+  if (route.name === 'itineraryPlaces') {
     return (
       <Screen
         bottom={
-          <Button
-            title={`Xem lại lịch trình · ${draft.stops.length} điểm`}
-            onPress={() =>
-              draft.stops.length ? navigate('tripReview') : notify('Chọn ít nhất một điểm đến.')
-            }
-          />
+          <Button title={`Xem lại lịch trình · ${draft.stops.length} điểm`} onPress={reviewDraft} />
         }
       >
         <Header title="Chọn điểm đến" onBack={back} />
@@ -273,7 +267,7 @@ export function ItineraryScreen() {
         <Label size={12} color={colors.muted} style={{ marginBottom: 10 }}>
           Ảnh / tên: xem chi tiết · Vòng tròn: chọn điểm đến
         </Label>
-        {shown.map((p) => (
+        {availablePlaces.map((p) => (
           <PlaceRow
             key={p.id}
             place={p}
@@ -283,21 +277,14 @@ export function ItineraryScreen() {
                 ? 'checkmark-circle-outline'
                 : 'ellipse-outline'
             }
-            onPress={() => {
-              const exists = draft.stops.some((s) => s.placeId === p.id);
-              setTrip({
-                stops: exists
-                  ? draft.stops.filter((s) => s.placeId !== p.id)
-                  : [...draft.stops, { placeId: p.id, start: '11:00', end: '12:00' }],
-              });
-            }}
+            onPress={() => togglePlace(p.id)}
           />
         ))}
       </Screen>
     );
   }
 
-  if (route.name === 'tripReview')
+  if (route.name === 'itineraryReview')
     return (
       <Screen
         bottom={<Button title="Lưu lịch trình" icon="bookmark-outline" onPress={submitDraft} />}
@@ -305,7 +292,7 @@ export function ItineraryScreen() {
         <Header title="Xem lại lịch trình" onBack={back} />
         <Pill title="Xem lại & xác nhận trước khi lưu" selected />
         <View style={{ marginTop: 15 }}>
-          <TripSummary trip={draft} />
+          <ItinerarySummary itinerary={draft} />
         </View>
         <Card>
           <Label weight="bold">
@@ -315,8 +302,8 @@ export function ItineraryScreen() {
         <Label size={13} color={colors.muted} style={{ marginBottom: 14 }}>
           Khung giờ gợi ý · Chỉnh sửa trước khi lưu
         </Label>
-        <TripStopsEditor
-          stops={draft.stops}
+        <ItineraryStopsEditor
+          stops={draftStopViews}
           onEdit={beginTimeEdit}
           editing={editingTime}
           timeEditor={timeEditor}
@@ -327,7 +314,7 @@ export function ItineraryScreen() {
       </Screen>
     );
 
-  if (route.name === 'tripSaved')
+  if (route.name === 'itinerarySaved')
     return (
       <Screen
         bottom={
@@ -335,13 +322,13 @@ export function ItineraryScreen() {
             <Button
               title="Xem lịch trình"
               icon="arrow-forward"
-              onPress={() => navigate('tripDetail', route.id ?? draft.id)}
+              onPress={() => navigate('itineraryDetail', route.id ?? draft.id)}
             />
-            <Button title="Về trang chủ" kind="outline" onPress={() => app.tab('home')} />
+            <Button title="Về trang chủ" kind="outline" onPress={() => tab('home')} />
           </View>
         }
       >
-        <Header title="Hoàn tất lịch trình" onBack={() => app.tab('itinerary')} />
+        <Header title="Hoàn tất lịch trình" onBack={() => tab('itinerary')} />
         <View style={{ alignItems: 'center', marginTop: 24 }}>
           <Ionicons name="checkmark-circle-outline" size={90} color={colors.success} />
           <Label size={25} weight="bold" style={{ marginTop: 16 }}>
@@ -354,20 +341,20 @@ export function ItineraryScreen() {
         <Card style={{ marginTop: 24 }}>
           <Pill title="Đã lưu" tone="green" />
           <View style={{ marginTop: 10 }}>
-            <TripSummary trip={draft} />
+            <ItinerarySummary itinerary={draft} />
           </View>
-          {draft.stops.map((s, i) => (
+          {draftStopViews.map((s, i) => (
             <Label key={i} style={{ marginVertical: 5 }}>
               {i + 1}
               {'.  '}
-              {getStopName(s.placeId)}
+              {s.name}
             </Label>
           ))}
         </Card>
       </Screen>
     );
 
-  if (route.name === 'tripDetail')
+  if (route.name === 'itineraryDetail')
     return (
       <Screen
         bottom={
@@ -375,26 +362,26 @@ export function ItineraryScreen() {
             title="Chỉnh sửa lịch trình"
             kind="secondary"
             icon="pencil-outline"
-            onPress={() => startEdit(selectedTrip.id)}
+            onPress={() => startEdit(selectedItinerary.id)}
           />
         }
       >
         <Header
           title="Chi tiết lịch trình"
-          onBack={() => app.tab('itinerary')}
+          onBack={() => tab('itinerary')}
           actionIcon="ellipsis-horizontal"
-          action={() => startEdit(selectedTrip.id)}
+          action={() => startEdit(selectedItinerary.id)}
         />
         <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}>
           <Pill title="Đã lưu" tone="green" />
-          <Pill title={`${selectedTrip.stops.length} điểm đến`} selected />
+          <Pill title={`${selectedItinerary.stops.length} điểm đến`} selected />
         </View>
-        <TripSummary trip={selectedTrip} />
-        {selectedTrip.stops.some((s) => s.placeId === 'son-tra') ? (
+        <ItinerarySummary itinerary={selectedItinerary} />
+        {hasWeatherWarning ? (
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Xem gợi ý thay thế"
-            onPress={() => navigate('weather', selectedTrip.id)}
+            onPress={() => navigate('weather', selectedItinerary.id)}
           >
             <InfoBanner tone="blue" icon="rainy-outline">
               15/11 · 27–30°C · Có thể mưa 14:00–16:00 tại Sơn Trà. Xem gợi ý thay thế
@@ -408,16 +395,16 @@ export function ItineraryScreen() {
         <Card>
           <Label weight="bold" color={colors.primaryDark}>
             {'Ngày 1 / 1  '}
-            {selectedTrip.date.slice(0, 5)}
+            {selectedItinerary.date.slice(0, 5)}
           </Label>
         </Card>
-        <SectionTitle title={`Ngày 1 · ${selectedTrip.stops.length} điểm đến`} />
-        {selectedTrip.stops.map((s, i) => (
+        <SectionTitle title={`Ngày 1 · ${selectedItinerary.stops.length} điểm đến`} />
+        {selectedStopViews.map((s, i) => (
           <StopCard
             key={`${s.placeId}-${i}`}
             stop={s}
             editing
-            onPress={() => beginSavedTimeEdit(selectedTrip, i, s)}
+            onPress={() => beginSavedTimeEdit(selectedItinerary, i, s)}
           />
         ))}
         <Label size={12} color={colors.muted}>
@@ -426,7 +413,7 @@ export function ItineraryScreen() {
       </Screen>
     );
 
-  if (route.name === 'tripEdit')
+  if (route.name === 'itineraryEdit')
     return (
       <Screen
         bottom={
@@ -440,16 +427,16 @@ export function ItineraryScreen() {
         <Field
           label="Tên lịch trình"
           value={draft.title}
-          onChangeText={(v) => setTrip({ title: v })}
+          onChangeText={(v) => setItinerary({ title: v })}
         />
         <Field
           label="Ngày khởi hành"
           value={draft.date}
-          onChangeText={(v) => setTrip({ date: v })}
+          onChangeText={(v) => setItinerary({ date: v })}
         />
         <SectionTitle title="Điểm đến và khung giờ" />
-        <TripStopsEditor
-          stops={draft.stops}
+        <ItineraryStopsEditor
+          stops={draftStopViews}
           onEdit={beginTimeEdit}
           editing={editingTime}
           timeEditor={timeEditor}
@@ -458,32 +445,19 @@ export function ItineraryScreen() {
           title="Thêm điểm đến đã lưu"
           kind="outline"
           icon="add"
-          onPress={() => navigate('tripEditPlaces')}
+          onPress={() => navigate('itineraryEditPlaces')}
         />
         <InfoBanner>Chỉ các thay đổi được xác nhận mới cập nhật vào lịch trình của bạn.</InfoBanner>
       </Screen>
     );
 
-  if (route.name === 'tripEditPlaces')
+  if (route.name === 'itineraryEditPlaces')
     return (
       <Screen bottom={<Button title="Quay lại chỉnh sửa" onPress={back} />}>
         <Header title="Chọn địa điểm đã lưu" onBack={back} />
-        {places
-          .filter((p) => app.favorites.includes(p.id))
-          .map((p) => (
-            <PlaceRow
-              key={p.id}
-              place={p}
-              onPress={() => {
-                if (draft.stops.some((s) => s.placeId === p.id))
-                  return notify('Điểm đến đã có trong lịch trình.');
-                setTrip({
-                  stops: [...draft.stops, { placeId: p.id, start: '19:00', end: '20:00' }],
-                });
-                back();
-              }}
-            />
-          ))}
+        {favoritePlaces.map((p) => (
+          <PlaceRow key={p.id} place={p} onPress={() => addFavoritePlace(p.id)} />
+        ))}
       </Screen>
     );
 
@@ -500,7 +474,7 @@ export function ItineraryScreen() {
             <Button
               title="Giữ nguyên lịch trình"
               kind="secondary"
-              onPress={() => navigate('tripDetail', route.id)}
+              onPress={() => navigate('itineraryDetail', route.id)}
             />
           </View>
         }
@@ -524,9 +498,9 @@ export function ItineraryScreen() {
           </Label>
         </View>
         <SectionTitle title="Điểm đến bị ảnh hưởng" />
-        <PlaceRow place={getPlace('son-tra')} onPress={() => navigate('place', 'son-tra')} />
+        <PlaceRow place={weatherPlace} onPress={() => navigate('place', 'son-tra')} />
         <Card>
-          <Label weight="bold">{selectedTrip.title}</Label>
+          <Label weight="bold">{selectedItinerary.title}</Label>
           <Label size={13} color={colors.muted}>
             2 điểm còn lại được giữ nguyên
           </Label>
@@ -556,7 +530,7 @@ export function ItineraryScreen() {
         </InfoBanner>
         <SectionTitle title="Địa điểm thay thế trong nhà" />
         <PlaceRow
-          place={getPlace('bao-tang-dn')}
+          place={replacementPlace}
           selected
           onPress={() => navigate('replacementConfirm', route.id)}
           trailing="checkmark-circle-outline"
@@ -566,7 +540,7 @@ export function ItineraryScreen() {
         </InfoBanner>
         <SectionTitle title="Đã có trong lịch trình · Không thể chọn" />
         <PlaceRow
-          place={getPlace('cham')}
+          place={museumPlace}
           onPress={() => notify('Địa điểm này đã có trong lịch trình.')}
         />
         <Label size={12} color={colors.muted}>
@@ -587,16 +561,16 @@ export function ItineraryScreen() {
     >
       <Header title="Xác nhận thay thế" onBack={back} />
       <Label weight="bold" style={{ marginTop: 16 }}>
-        {selectedTrip.title}
+        {selectedItinerary.title}
       </Label>
       <Pill title="15/11/2026 · 14:00–16:00" tone="blue" />
       <SectionTitle title="ĐIỂM ĐẾN HIỆN TẠI" />
-      <PlaceRow place={getPlace('son-tra')} onPress={() => navigate('place', 'son-tra')} />
+      <PlaceRow place={weatherPlace} onPress={() => navigate('place', 'son-tra')} />
       <View style={{ alignItems: 'center' }}>
         <Ionicons name="arrow-down" size={25} color={colors.primaryDark} />
       </View>
       <SectionTitle title="ĐIỂM ĐẾN THAY THẾ" />
-      <PlaceRow place={getPlace('bao-tang-dn')} selected onPress={() => {}} />
+      <PlaceRow place={replacementPlace} selected onPress={() => {}} />
       <InfoBanner tone="green">
         Giữ nguyên khung giờ 14:00–16:00. Hai điểm còn lại không đổi. Chỉ cập nhật khi bạn xác nhận.
       </InfoBanner>

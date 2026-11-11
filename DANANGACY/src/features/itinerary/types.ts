@@ -1,5 +1,5 @@
 export type Stop = { placeId: string; start: string; end: string };
-export type Trip = {
+export type Itinerary = {
   id: string;
   title: string;
   date: string;
@@ -8,3 +8,5 @@ export type Trip = {
   stops: Stop[];
   saved: boolean;
 };
+
+export type StopView = Stop & { name: string; description: string };

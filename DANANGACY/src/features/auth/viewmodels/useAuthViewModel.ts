@@ -1,11 +1,19 @@
 import { useState } from 'react';
-import { useApp } from '../../../providers/AppProvider';
+import { useNavigationViewModel } from '../../../navigation/NavigationProvider';
+import { notify } from '../../../utils/notify';
+import { useAuthModel } from '../providers/AuthProvider';
+import { useProfileModel } from '../../profile/providers/ProfileProvider';
 
 export function useAuthViewModel() {
-  const app = useApp();
-  const { route, navigate, back, login, notify } = app;
-  const [fullName, setFullName] = useState(app.name);
-  const [email, setEmail] = useState(app.email);
+  const { route, navigate, back, tab } = useNavigationViewModel();
+  const auth = useAuthModel();
+  const profile = useProfileModel();
+  const login = () => {
+    auth.login();
+    tab('home');
+  };
+  const [fullName, setFullName] = useState(profile.name);
+  const [email, setEmail] = useState(profile.email);
   const [password, setPassword] = useState('12345678');
   const [confirm, setConfirm] = useState('12345678');
   const [code, setCode] = useState('123456');
@@ -18,8 +26,7 @@ export function useAuthViewModel() {
   const submitRegistration = () => {
     if (!fullName.trim() || !email.includes('@') || password.length < 8 || password !== confirm)
       return notify('Kiểm tra họ tên, email và hai mật khẩu trước khi đăng ký.');
-    app.setName(fullName.trim());
-    app.setEmail(email.trim());
+    profile.updateProfile({ name: fullName.trim(), email: email.trim() });
     login();
   };
   const requestResetCode = () =>
@@ -32,12 +39,13 @@ export function useAuthViewModel() {
       : notify('Hai mật khẩu chưa trùng khớp hoặc quá ngắn.');
 
   return {
+    tab,
+
     submitLogin,
     submitRegistration,
     requestResetCode,
     verifyCode,
     submitPasswordReset,
-    app,
     route,
     navigate,
     back,
