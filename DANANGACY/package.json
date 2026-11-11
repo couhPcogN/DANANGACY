@@ -17,6 +17,7 @@
   },
   "devDependencies": {
     "@types/react": "~19.3.0",
+    "prettier": "3.6.2",
     "typescript": "~6.0.3"
   },
   "scripts": {
@@ -25,6 +26,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
+    "format": "prettier --write App.tsx index.ts src",
+    "format:check": "prettier --check App.tsx index.ts src",
     "export:web": "expo export --platform web",
     "export:android": "expo export --platform android"
   },

@@ -10,6 +10,8 @@ export const colors = {
   warmBorder: '#FFE0B8',
   success: '#17876D',
   successBg: '#E3F4EF',
+  error: '#C35436',
+  errorBg: '#FFF1EC',
   info: '#176B88',
   infoBg: '#E4F1F5',
   white: '#FFFFFF',

@@ -1,49 +1,500 @@
-import { RewardsContent } from '../components/RewardsContent';
-import React from 'react';
-import { View } from 'react-native';
+import { QuizAnswer } from '../components/QuizAnswer';
 import { Ionicons } from '@expo/vector-icons';
+import { View } from 'react-native';
+import {
+  Button,
+  Card,
+  Header,
+  InfoBanner,
+  Label,
+  Pill,
+  PlacePhoto,
+  Progress,
+  Screen,
+  SectionTitle,
+  Tabs,
+} from '../../../components';
 import { images } from '../../../config/images';
-import { quiz } from '../../game/repositories/gameRepository';
-import { useGameViewModel } from '../viewmodels/useGameViewModel';
 import { colors } from '../../../theme';
-import { Button, Card, Header, InfoBanner, Label, Pill, PlacePhoto, Progress, Screen, SectionTitle, Tabs } from '../../../components';
+import { quiz } from '../../game/repositories/gameRepository';
+import { RewardsContent } from '../components/RewardsContent';
+import { useGameViewModel } from '../viewmodels/useGameViewModel';
 
 const names = ['Hiện vật Chăm Pa', 'Dấu ấn bên sông Hàn', 'Di sản phố cổ Hội An'];
 
 export function GameScreen() {
-  const { app, route, navigate, back, quizIndex, quizSelected, quizConfirmed, quizAnswers, quizCompleted, points, startQuiz, selectAnswer, confirmAnswer, nextQuestion, rewardRedeemed, redeemReward, notify, gameTab, setGameTab, visibleGameTab, voucherFilter, setVoucherFilter, current, score, nextQuizIndex, displayQuestion, redeemSelectedReward } = useGameViewModel();
+  const {
+    app,
+    route,
+    navigate,
+    back,
+    quizIndex,
+    quizSelected,
+    quizConfirmed,
+    quizAnswers,
+    quizCompleted,
+    points,
+    startQuiz,
+    selectAnswer,
+    confirmAnswer,
+    nextQuestion,
+    rewardRedeemed,
+    notify,
+    setGameTab,
+    visibleGameTab,
+    voucherFilter,
+    setVoucherFilter,
+    current,
+    score,
+    displayQuestion,
+    redeemSelectedReward,
+  } = useGameViewModel();
 
-  if (route.name === 'game' || route.name === 'rewards') return <Screen bottom={<Tabs active="game" />} tabs>
-    <Header title="Mini game" subtitle={visibleGameTab === 'challenge' ? 'Khám phá, học hỏi và tích điểm' : 'Mỗi trải nghiệm, thêm một phần quà'} />
-    <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}><Button title="Thử thách" kind={visibleGameTab === 'challenge' ? 'secondary' : 'outline'} onPress={() => route.name === 'rewards' ? app.tab('game') : setGameTab('challenge')} style={{ flex: 1, minHeight: 46 }} /><Button title="Phần thưởng" kind={visibleGameTab === 'rewards' ? 'secondary' : 'outline'} onPress={() => setGameTab('rewards')} style={{ flex: 1, minHeight: 46 }} /></View>
-    {visibleGameTab === 'challenge' ? <><InfoBanner icon="extension-puzzle-outline"><Label weight="bold">{points} điểm hiện có</Label>{'\n'}Hoàn thành thử thách để nhận thêm điểm.</InfoBanner>{names.map((name, index) => <Card key={name} style={{ padding: 11, marginBottom: 8 }}><View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><Ionicons name="business-outline" size={22} color={colors.ink} /><Label weight="bold">{name}</Label></View><Label size={12} color={colors.primaryDark} style={{ marginTop: 4, marginBottom: 5 }}>{index === 0 ? quizCompleted ? 'Đã hoàn thành · 5 câu hỏi' : `Câu ${displayQuestion}/5 · Hiện vật Chăm Pa` : 'Chưa bắt đầu · 5 câu hỏi'}</Label>{index === 0 ? <Progress step={displayQuestion} total={5} compact /> : null}<View style={{ alignSelf: 'flex-start', backgroundColor: colors.warm, borderRadius: 100, paddingVertical: 4, paddingHorizontal: 10, marginTop: 2 }}><Label size={12} weight="medium" color={colors.primaryDark}>Thưởng lần đầu: 50 điểm</Label></View><Button title={index === 0 ? quizCompleted ? 'Xem kết quả' : 'Tiếp tục' : 'Bắt đầu'} onPress={() => index === 0 ? navigate(quizCompleted ? 'quizResult' : 'gameIntro') : notify('Thử thách này sẽ có trong bản tiếp theo.')} style={{ marginTop: 7, minHeight: 40 }} /></Card>)}</> : <RewardsContent onOpen={() => navigate('rewardDetail')} points={points} onUnavailable={notify} />}
-  </Screen>;
+  if (route.name === 'game' || route.name === 'rewards')
+    return (
+      <Screen bottom={<Tabs active="game" />} tabs>
+        <Header
+          title="Mini game"
+          subtitle={
+            visibleGameTab === 'challenge'
+              ? 'Khám phá, học hỏi và tích điểm'
+              : 'Mỗi trải nghiệm, thêm một phần quà'
+          }
+        />
+        <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}>
+          <Button
+            title="Thử thách"
+            kind={visibleGameTab === 'challenge' ? 'secondary' : 'outline'}
+            onPress={() => (route.name === 'rewards' ? app.tab('game') : setGameTab('challenge'))}
+            style={{ flex: 1, minHeight: 46 }}
+          />
+          <Button
+            title="Phần thưởng"
+            kind={visibleGameTab === 'rewards' ? 'secondary' : 'outline'}
+            onPress={() => setGameTab('rewards')}
+            style={{ flex: 1, minHeight: 46 }}
+          />
+        </View>
+        {visibleGameTab === 'challenge' ? (
+          <>
+            <InfoBanner icon="extension-puzzle-outline">
+              <Label weight="bold">{points} điểm hiện có</Label>
+              {'\n'}Hoàn thành thử thách để nhận thêm điểm.
+            </InfoBanner>
+            {names.map((name, index) => (
+              <Card key={name} style={{ padding: 11, marginBottom: 8 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <Ionicons name="business-outline" size={22} color={colors.ink} />
+                  <Label weight="bold">{name}</Label>
+                </View>
+                <Label
+                  size={12}
+                  color={colors.primaryDark}
+                  style={{ marginTop: 4, marginBottom: 5 }}
+                >
+                  {index === 0
+                    ? quizCompleted
+                      ? 'Đã hoàn thành · 5 câu hỏi'
+                      : `Câu ${displayQuestion}/5 · Hiện vật Chăm Pa`
+                    : 'Chưa bắt đầu · 5 câu hỏi'}
+                </Label>
+                {index === 0 ? <Progress step={displayQuestion} total={5} compact /> : null}
+                <View
+                  style={{
+                    alignSelf: 'flex-start',
+                    backgroundColor: colors.warm,
+                    borderRadius: 100,
+                    paddingVertical: 4,
+                    paddingHorizontal: 10,
+                    marginTop: 2,
+                  }}
+                >
+                  <Label size={12} weight="medium" color={colors.primaryDark}>
+                    Thưởng lần đầu: 50 điểm
+                  </Label>
+                </View>
+                <Button
+                  title={index === 0 ? (quizCompleted ? 'Xem kết quả' : 'Tiếp tục') : 'Bắt đầu'}
+                  onPress={() =>
+                    index === 0
+                      ? navigate(quizCompleted ? 'quizResult' : 'gameIntro')
+                      : notify('Thử thách này sẽ có trong bản tiếp theo.')
+                  }
+                  style={{ marginTop: 7, minHeight: 40 }}
+                />
+              </Card>
+            ))}
+          </>
+        ) : (
+          <RewardsContent
+            onOpen={() => navigate('rewardDetail')}
+            points={points}
+            onUnavailable={notify}
+          />
+        )}
+      </Screen>
+    );
 
-  if (route.name === 'gameIntro') return <Screen bottom={<Button title={quizCompleted ? 'Xem kết quả' : 'Tiếp tục thử thách'} icon="play-outline" onPress={() => quizCompleted ? navigate('quizResult') : startQuiz()} />}>
-    <Header title="Giới thiệu thử thách" onBack={back} /><PlacePhoto source={images.chamArtifact} name="Hiện vật Chăm Pa" height={192} /><View style={{ marginTop: 16 }}><Pill title={`Đang thực hiện · Câu ${displayQuestion}/5`} selected /></View><Label size={21} weight="bold" style={{ marginTop: 16 }}>Hiện vật Chăm Pa</Label><Label color={colors.muted} style={{ marginTop: 16, marginBottom: 20 }}>Quan sát các hiện vật tại Bảo tàng Điêu khắc Chăm và tìm hiểu vẻ đẹp của nghệ thuật điêu khắc.</Label><Card><Label weight="bold">5 câu hỏi · 1 đáp án mỗi câu</Label><Label size={12} color={colors.muted}>Không giới hạn thời gian trả lời.</Label><Label weight="bold" style={{ marginTop: 15 }}>Hoàn thành để nhận 50 điểm</Label><Label size={12} color={colors.muted}>Chỉ nhận điểm ở lần hoàn thành hợp lệ đầu tiên.</Label><Label weight="bold" style={{ marginTop: 15 }}>Học từ mỗi câu trả lời</Label><Label size={12} color={colors.muted}>Xem lại đáp án sau khi kết thúc.</Label></Card><Label size={12} color={colors.muted}>Tôn trọng hiện vật và nội quy khi tham quan. Không chạm vào tác phẩm trưng bày.</Label>
-  </Screen>;
+  if (route.name === 'gameIntro')
+    return (
+      <Screen
+        bottom={
+          <Button
+            title={quizCompleted ? 'Xem kết quả' : 'Tiếp tục thử thách'}
+            icon="play-outline"
+            onPress={() => (quizCompleted ? navigate('quizResult') : startQuiz())}
+          />
+        }
+      >
+        <Header title="Giới thiệu thử thách" onBack={back} />
+        <PlacePhoto source={images.chamArtifact} name="Hiện vật Chăm Pa" height={192} />
+        <View style={{ marginTop: 16 }}>
+          <Pill title={`Đang thực hiện · Câu ${displayQuestion}/5`} selected />
+        </View>
+        <Label size={21} weight="bold" style={{ marginTop: 16 }}>
+          Hiện vật Chăm Pa
+        </Label>
+        <Label color={colors.muted} style={{ marginTop: 16, marginBottom: 20 }}>
+          Quan sát các hiện vật tại Bảo tàng Điêu khắc Chăm và tìm hiểu vẻ đẹp của nghệ thuật điêu
+          khắc.
+        </Label>
+        <Card>
+          <Label weight="bold">5 câu hỏi · 1 đáp án mỗi câu</Label>
+          <Label size={12} color={colors.muted}>
+            Không giới hạn thời gian trả lời.
+          </Label>
+          <Label weight="bold" style={{ marginTop: 15 }}>
+            Hoàn thành để nhận 50 điểm
+          </Label>
+          <Label size={12} color={colors.muted}>
+            Chỉ nhận điểm ở lần hoàn thành hợp lệ đầu tiên.
+          </Label>
+          <Label weight="bold" style={{ marginTop: 15 }}>
+            Học từ mỗi câu trả lời
+          </Label>
+          <Label size={12} color={colors.muted}>
+            Xem lại đáp án sau khi kết thúc.
+          </Label>
+        </Card>
+        <Label size={12} color={colors.muted}>
+          Tôn trọng hiện vật và nội quy khi tham quan. Không chạm vào tác phẩm trưng bày.
+        </Label>
+      </Screen>
+    );
 
-  if (route.name === 'quiz') return <Screen bottom={<Button title={quizConfirmed ? quizIndex === 4 ? 'Xem kết quả' : 'Câu tiếp theo' : 'Xác nhận đáp án'} disabled={!quizConfirmed && quizSelected === null} onPress={quizConfirmed ? nextQuestion : confirmAnswer} />}>
-    <Header title="Hiện vật Chăm Pa" onBack={back} actionIcon="close-outline" action={() => app.tab('game')} /><Label size={12} weight="bold" color={colors.primaryDark}>Câu {quizIndex + 1}/5 · Hiện vật Chăm Pa</Label><Progress step={quizIndex + 1} total={5} /><PlacePhoto source={images.chamMuseum} name="Bảo tàng Điêu khắc Chăm" height={120} style={{ marginTop: 8 }} /><Label size={16} weight="bold" style={{ marginTop: 17, marginBottom: 12 }}>{current.question}</Label><Label size={13} color={colors.muted} style={{ marginBottom: 13 }}>Chọn một đáp án đúng.</Label>
-    {current.answers.map((answer, i) => <Card key={i} onPress={() => selectAnswer(i)} style={{ marginBottom: 8, borderColor: quizSelected === i ? quizConfirmed ? i === current.correct ? colors.success : '#C35436' : colors.primary : colors.border, backgroundColor: quizSelected === i ? quizConfirmed ? i === current.correct ? colors.successBg : '#FFF1EC' : colors.warm : colors.white }}><View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}><Label color={colors.muted} weight="bold">{'ABCD'[i]}</Label><Label style={{ flex: 1 }}>{answer}</Label><Ionicons name={quizSelected === i ? 'radio-button-on-outline' : 'radio-button-off-outline'} size={20} color={quizSelected === i ? colors.primaryDark : colors.muted} /></View></Card>)}
-    {quizConfirmed ? <InfoBanner tone={quizSelected === current.correct ? 'green' : 'orange'}>{quizSelected === current.correct ? 'Chính xác! ' : `Chưa đúng. Đáp án: ${current.answers[current.correct]}. `}{current.explanation}</InfoBanner> : <Label size={12} color={colors.muted} style={{ marginTop: 10 }}>Chọn một đáp án để tiếp tục.</Label>}
-  </Screen>;
+  if (route.name === 'quiz')
+    return (
+      <Screen
+        bottom={
+          <Button
+            title={
+              quizConfirmed
+                ? quizIndex === 4
+                  ? 'Xem kết quả'
+                  : 'Câu tiếp theo'
+                : 'Xác nhận đáp án'
+            }
+            disabled={!quizConfirmed && quizSelected === null}
+            onPress={quizConfirmed ? nextQuestion : confirmAnswer}
+          />
+        }
+      >
+        <Header
+          title="Hiện vật Chăm Pa"
+          onBack={back}
+          actionIcon="close-outline"
+          action={() => app.tab('game')}
+        />
+        <Label size={12} weight="bold" color={colors.primaryDark}>
+          Câu {quizIndex + 1}/5 · Hiện vật Chăm Pa
+        </Label>
+        <Progress step={quizIndex + 1} total={5} />
+        <PlacePhoto
+          source={images.chamMuseum}
+          name="Bảo tàng Điêu khắc Chăm"
+          height={120}
+          style={{ marginTop: 8 }}
+        />
+        <Label size={16} weight="bold" style={{ marginTop: 17, marginBottom: 12 }}>
+          {current.question}
+        </Label>
+        <Label size={13} color={colors.muted} style={{ marginBottom: 13 }}>
+          Chọn một đáp án đúng.
+        </Label>
+        {current.answers.map((answer, index) => (
+          <QuizAnswer
+            key={index}
+            answer={answer}
+            index={index}
+            selected={quizSelected === index}
+            confirmed={quizConfirmed}
+            correct={index === current.correct}
+            onSelect={() => selectAnswer(index)}
+          />
+        ))}
+        {quizConfirmed ? (
+          <InfoBanner tone={quizSelected === current.correct ? 'green' : 'orange'}>
+            {quizSelected === current.correct
+              ? 'Chính xác! '
+              : `Chưa đúng. Đáp án: ${current.answers[current.correct]}. `}
+            {current.explanation}
+          </InfoBanner>
+        ) : (
+          <Label size={12} color={colors.muted} style={{ marginTop: 10 }}>
+            Chọn một đáp án để tiếp tục.
+          </Label>
+        )}
+      </Screen>
+    );
 
-  if (route.name === 'quizResult') return <Screen bottom={<View style={{ gap: 8 }}><Button title="Xem lại đáp án" icon="book-outline" onPress={() => navigate('quizAnswers')} /><Button title="Về danh sách thử thách" kind="secondary" onPress={() => app.tab('game')} /></View>}>
-    <Header title="Kết quả" onBack={() => app.tab('game')} /><View style={{ alignItems: 'center', marginTop: 22 }}><View style={{ backgroundColor: colors.warm, width: 90, height: 90, borderRadius: 45, alignItems: 'center', justifyContent: 'center' }}><Ionicons name="trophy-outline" size={48} color={colors.primaryDark} /></View><Label size={25} weight="bold" style={{ marginTop: 17 }}>Bạn đã hoàn thành!</Label><Label color={colors.muted} style={{ marginTop: 12 }}>Hiện vật Chăm Pa</Label></View><Card style={{ backgroundColor: colors.warm, borderColor: colors.warmBorder, alignItems: 'center', marginTop: 24, padding: 18 }}><Label size={38} weight="bold">{score}/5</Label><Label>câu trả lời chính xác</Label><Label color={colors.primaryDark} weight="bold" style={{ marginTop: 10 }}>+50 điểm di sản</Label></Card><Card><Label weight="bold">Điểm hiện có: {points}</Label><Label size={12} color={colors.muted}>Đã nhận 50 điểm cho lần hoàn thành đầu tiên.</Label><Label size={12} color={colors.muted} style={{ marginTop: 9 }}>Điểm hoàn thành chỉ được cộng một lần.</Label></Card><InfoBanner icon="ticket-outline">Đổi điểm nhận quà. {points} điểm có thể đổi ưu đãi mô phỏng trong tab Phần thưởng.</InfoBanner>
-  </Screen>;
+  if (route.name === 'quizResult')
+    return (
+      <Screen
+        bottom={
+          <View style={{ gap: 8 }}>
+            <Button
+              title="Xem lại đáp án"
+              icon="book-outline"
+              onPress={() => navigate('quizAnswers')}
+            />
+            <Button
+              title="Về danh sách thử thách"
+              kind="secondary"
+              onPress={() => app.tab('game')}
+            />
+          </View>
+        }
+      >
+        <Header title="Kết quả" onBack={() => app.tab('game')} />
+        <View style={{ alignItems: 'center', marginTop: 22 }}>
+          <View
+            style={{
+              backgroundColor: colors.warm,
+              width: 90,
+              height: 90,
+              borderRadius: 45,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Ionicons name="trophy-outline" size={48} color={colors.primaryDark} />
+          </View>
+          <Label size={25} weight="bold" style={{ marginTop: 17 }}>
+            Bạn đã hoàn thành!
+          </Label>
+          <Label color={colors.muted} style={{ marginTop: 12 }}>
+            Hiện vật Chăm Pa
+          </Label>
+        </View>
+        <Card
+          style={{
+            backgroundColor: colors.warm,
+            borderColor: colors.warmBorder,
+            alignItems: 'center',
+            marginTop: 24,
+            padding: 18,
+          }}
+        >
+          <Label size={38} weight="bold">
+            {score}/5
+          </Label>
+          <Label>câu trả lời chính xác</Label>
+          <Label color={colors.primaryDark} weight="bold" style={{ marginTop: 10 }}>
+            +50 điểm di sản
+          </Label>
+        </Card>
+        <Card>
+          <Label weight="bold">Điểm hiện có: {points}</Label>
+          <Label size={12} color={colors.muted}>
+            Đã nhận 50 điểm cho lần hoàn thành đầu tiên.
+          </Label>
+          <Label size={12} color={colors.muted} style={{ marginTop: 9 }}>
+            Điểm hoàn thành chỉ được cộng một lần.
+          </Label>
+        </Card>
+        <InfoBanner icon="ticket-outline">
+          Đổi điểm nhận quà. {points} điểm có thể đổi ưu đãi mô phỏng trong tab Phần thưởng.
+        </InfoBanner>
+      </Screen>
+    );
 
-  if (route.name === 'quizAnswers') return <Screen><Header title="Xem lại đáp án" onBack={back} /><Label color={colors.muted} style={{ marginBottom: 14 }}>Cả 5 câu · Hiện vật Chăm Pa</Label>{quiz.map((q, i) => <Card key={i}><Label weight="bold">Câu {i + 1}: {q.question}</Label><Label size={13} color={quizAnswers[i] === q.correct ? colors.success : colors.primaryDark} style={{ marginTop: 10 }}>Bạn chọn: {quizAnswers[i] === null ? 'Chưa trả lời' : q.answers[quizAnswers[i]!]}</Label><Label size={13} color={colors.success}>Đáp án đúng: {q.answers[q.correct]}</Label><Label size={12} color={colors.muted} style={{ marginTop: 8 }}>{q.explanation}</Label></Card>)}</Screen>;
+  if (route.name === 'quizAnswers')
+    return (
+      <Screen>
+        <Header title="Xem lại đáp án" onBack={back} />
+        <Label color={colors.muted} style={{ marginBottom: 14 }}>
+          Cả 5 câu · Hiện vật Chăm Pa
+        </Label>
+        {quiz.map((q, i) => (
+          <Card key={i}>
+            <Label weight="bold">
+              Câu {i + 1}: {q.question}
+            </Label>
+            <Label
+              size={13}
+              color={quizAnswers[i] === q.correct ? colors.success : colors.primaryDark}
+              style={{ marginTop: 10 }}
+            >
+              Bạn chọn: {quizAnswers[i] === null ? 'Chưa trả lời' : q.answers[quizAnswers[i]!]}
+            </Label>
+            <Label size={13} color={colors.success}>
+              Đáp án đúng: {q.answers[q.correct]}
+            </Label>
+            <Label size={12} color={colors.muted} style={{ marginTop: 8 }}>
+              {q.explanation}
+            </Label>
+          </Card>
+        ))}
+      </Screen>
+    );
 
-  if (route.name === 'rewardDetail') return <Screen bottom={<Button title="Đổi ưu đãi · 100 điểm" icon="ticket-outline" onPress={redeemSelectedReward} />}>
-    <Header title="Chi tiết ưu đãi" onBack={back} /><View style={{ backgroundColor: colors.warm, borderColor: colors.warmBorder, borderWidth: 1, borderRadius: 16, alignItems: 'center', padding: 30, marginTop: 22, marginBottom: 18 }}><Ionicons name="cafe-outline" size={42} color={colors.primaryDark} /><Label size={34} weight="bold" color={colors.primaryDark}>GIẢM 20%</Label><Label color={colors.primaryDark} size={12} weight="bold">Ưu đãi mô phỏng</Label></View><Label size={21} weight="bold">Cà phê bên sông Hàn</Label><Label color={colors.muted} style={{ marginVertical: 17 }}>Một khoảng nghỉ nhẹ nhàng trong hành trình khám phá Đà Nẵng.</Label><Card><Label weight="bold">100 điểm để đổi</Label><Label size={12} color={colors.muted}>Bạn có {points} điểm · Còn {Math.max(0, points - 100)} điểm sau khi đổi</Label><Label weight="bold" style={{ marginTop: 15 }}>Hiệu lực mô phỏng: 30 ngày</Label><Label size={12} color={colors.muted}>Tính từ ngày đổi ưu đãi.</Label></Card><SectionTitle title="Điều kiện sử dụng" /><Label size={13} color={colors.muted}>Giảm 20% cho 1 đồ uống, tối đa 30.000đ. Mỗi mã dùng 1 lần; không quy đổi thành tiền hoặc cộng dồn ưu đãi.</Label><InfoBanner>Chỉ dùng để trải nghiệm ứng dụng. Mã mô phỏng không có giá trị thanh toán tại cửa hàng.</InfoBanner>
-  </Screen>;
+  if (route.name === 'rewardDetail')
+    return (
+      <Screen
+        bottom={
+          <Button
+            title="Đổi ưu đãi · 100 điểm"
+            icon="ticket-outline"
+            onPress={redeemSelectedReward}
+          />
+        }
+      >
+        <Header title="Chi tiết ưu đãi" onBack={back} />
+        <View
+          style={{
+            backgroundColor: colors.warm,
+            borderColor: colors.warmBorder,
+            borderWidth: 1,
+            borderRadius: 16,
+            alignItems: 'center',
+            padding: 30,
+            marginTop: 22,
+            marginBottom: 18,
+          }}
+        >
+          <Ionicons name="cafe-outline" size={42} color={colors.primaryDark} />
+          <Label size={34} weight="bold" color={colors.primaryDark}>
+            GIẢM 20%
+          </Label>
+          <Label color={colors.primaryDark} size={12} weight="bold">
+            Ưu đãi mô phỏng
+          </Label>
+        </View>
+        <Label size={21} weight="bold">
+          Cà phê bên sông Hàn
+        </Label>
+        <Label color={colors.muted} style={{ marginVertical: 17 }}>
+          Một khoảng nghỉ nhẹ nhàng trong hành trình khám phá Đà Nẵng.
+        </Label>
+        <Card>
+          <Label weight="bold">100 điểm để đổi</Label>
+          <Label size={12} color={colors.muted}>
+            Bạn có {points} điểm · Còn {Math.max(0, points - 100)} điểm sau khi đổi
+          </Label>
+          <Label weight="bold" style={{ marginTop: 15 }}>
+            Hiệu lực mô phỏng: 30 ngày
+          </Label>
+          <Label size={12} color={colors.muted}>
+            Tính từ ngày đổi ưu đãi.
+          </Label>
+        </Card>
+        <SectionTitle title="Điều kiện sử dụng" />
+        <Label size={13} color={colors.muted}>
+          Giảm 20% cho 1 đồ uống, tối đa 30.000đ. Mỗi mã dùng 1 lần; không quy đổi thành tiền hoặc
+          cộng dồn ưu đãi.
+        </Label>
+        <InfoBanner>
+          Chỉ dùng để trải nghiệm ứng dụng. Mã mô phỏng không có giá trị thanh toán tại cửa hàng.
+        </InfoBanner>
+      </Screen>
+    );
 
-  if (route.name === 'redeemed') return <Screen bottom={<View style={{ gap: 8 }}><Button title="Xem ưu đãi của tôi" icon="ticket-outline" onPress={() => navigate('myRewards')} /><Button title="Về phần thưởng" kind="secondary" onPress={() => navigate('rewards')} /></View>}>
-    <Header title="Xác nhận đổi ưu đãi" onBack={() => navigate('rewards')} /><View style={{ alignItems: 'center', marginVertical: 28 }}><Ionicons name="checkmark-circle-outline" size={80} color={colors.success} /><Label size={24} weight="bold" style={{ marginTop: 16 }}>Đổi ưu đãi thành công</Label><Pill title="Giao dịch mô phỏng" tone="green" /></View><Card><Label weight="bold">Cà phê bên sông Hàn</Label><Label size={12} color={colors.muted}>Giảm 20% · 1 đồ uống</Label><Label size={12} color={colors.muted} style={{ marginTop: 12 }}>Mã mô phỏng: DEMO-HAN-1511</Label></Card><InfoBanner icon="ticket-outline">Đã dùng: 100 điểm. Còn lại: {points} điểm.</InfoBanner><InfoBanner>Ưu đãi đã được lưu vào Ưu đãi của tôi. Mã không có giá trị thanh toán thực tế.</InfoBanner>
-  </Screen>;
+  if (route.name === 'redeemed')
+    return (
+      <Screen
+        bottom={
+          <View style={{ gap: 8 }}>
+            <Button
+              title="Xem ưu đãi của tôi"
+              icon="ticket-outline"
+              onPress={() => navigate('myRewards')}
+            />
+            <Button title="Về phần thưởng" kind="secondary" onPress={() => navigate('rewards')} />
+          </View>
+        }
+      >
+        <Header title="Xác nhận đổi ưu đãi" onBack={() => navigate('rewards')} />
+        <View style={{ alignItems: 'center', marginVertical: 28 }}>
+          <Ionicons name="checkmark-circle-outline" size={80} color={colors.success} />
+          <Label size={24} weight="bold" style={{ marginTop: 16 }}>
+            Đổi ưu đãi thành công
+          </Label>
+          <Pill title="Giao dịch mô phỏng" tone="green" />
+        </View>
+        <Card>
+          <Label weight="bold">Cà phê bên sông Hàn</Label>
+          <Label size={12} color={colors.muted}>
+            Giảm 20% · 1 đồ uống
+          </Label>
+          <Label size={12} color={colors.muted} style={{ marginTop: 12 }}>
+            Mã mô phỏng: DEMO-HAN-1511
+          </Label>
+        </Card>
+        <InfoBanner icon="ticket-outline">Đã dùng: 100 điểm. Còn lại: {points} điểm.</InfoBanner>
+        <InfoBanner>
+          Ưu đãi đã được lưu vào Ưu đãi của tôi. Mã không có giá trị thanh toán thực tế.
+        </InfoBanner>
+      </Screen>
+    );
 
-  return <Screen bottom={<Tabs active="game" />} tabs><Header title="Ưu đãi của tôi" onBack={back} /><View style={{ flexDirection: 'row', gap: 8, marginBottom: 15 }}><Pill title={`Còn hiệu lực · ${rewardRedeemed ? 1 : 0}`} selected={voucherFilter === 'active'} onPress={() => setVoucherFilter('active')} /><Pill title="Đã dùng · 0" selected={voucherFilter === 'used'} onPress={() => setVoucherFilter('used')} /></View><InfoBanner>Ưu đãi mô phỏng · Không có giá trị thanh toán hoặc cam kết từ đối tác thực tế.</InfoBanner>{rewardRedeemed && voucherFilter === 'active' ? <Card><Pill title="Còn hiệu lực · Mô phỏng" tone="green" /><Label weight="bold" style={{ marginTop: 14 }}>Cà phê bên sông Hàn</Label><Label size={12} color={colors.muted}>Giảm 20% · Tối đa 30.000đ</Label><Label size={21} weight="bold" color={colors.primaryDark} style={{ marginVertical: 14 }}>DEMO-HAN-1511</Label><Label size={12} color={colors.muted}>Đổi ngày 15/11/2026 · Hết hạn 15/12/2026</Label><Button title="Xem điều kiện ưu đãi" kind="secondary" onPress={() => navigate('rewardDetail')} style={{ marginTop: 14 }} /></Card> : <Card><Label color={colors.muted}>Chưa có ưu đãi trong mục này.</Label></Card>}<InfoBanner icon="extension-puzzle-outline">{points} điểm còn lại. Tiếp tục thử thách di sản để tích thêm điểm.</InfoBanner></Screen>;
+  return (
+    <Screen bottom={<Tabs active="game" />} tabs>
+      <Header title="Ưu đãi của tôi" onBack={back} />
+      <View style={{ flexDirection: 'row', gap: 8, marginBottom: 15 }}>
+        <Pill
+          title={`Còn hiệu lực · ${rewardRedeemed ? 1 : 0}`}
+          selected={voucherFilter === 'active'}
+          onPress={() => setVoucherFilter('active')}
+        />
+        <Pill
+          title="Đã dùng · 0"
+          selected={voucherFilter === 'used'}
+          onPress={() => setVoucherFilter('used')}
+        />
+      </View>
+      <InfoBanner>
+        Ưu đãi mô phỏng · Không có giá trị thanh toán hoặc cam kết từ đối tác thực tế.
+      </InfoBanner>
+      {rewardRedeemed && voucherFilter === 'active' ? (
+        <Card>
+          <Pill title="Còn hiệu lực · Mô phỏng" tone="green" />
+          <Label weight="bold" style={{ marginTop: 14 }}>
+            Cà phê bên sông Hàn
+          </Label>
+          <Label size={12} color={colors.muted}>
+            Giảm 20% · Tối đa 30.000đ
+          </Label>
+          <Label size={21} weight="bold" color={colors.primaryDark} style={{ marginVertical: 14 }}>
+            DEMO-HAN-1511
+          </Label>
+          <Label size={12} color={colors.muted}>
+            Đổi ngày 15/11/2026 · Hết hạn 15/12/2026
+          </Label>
+          <Button
+            title="Xem điều kiện ưu đãi"
+            kind="secondary"
+            onPress={() => navigate('rewardDetail')}
+            style={{ marginTop: 14 }}
+          />
+        </Card>
+      ) : (
+        <Card>
+          <Label color={colors.muted}>Chưa có ưu đãi trong mục này.</Label>
+        </Card>
+      )}
+      <InfoBanner icon="extension-puzzle-outline">
+        {points} điểm còn lại. Tiếp tục thử thách di sản để tích thêm điểm.
+      </InfoBanner>
+    </Screen>
+  );
 }
-
-

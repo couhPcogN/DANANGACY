@@ -1,13 +1,28 @@
 import { useState } from 'react';
 import type { Route, RouteName } from '../../../navigation/types';
+import {
+  cloneTrip,
+  createSavedTrip,
+  defaultTrip,
+  initialTrip,
+  replaceOutdoorStop,
+  updateTrip,
+} from '../repositories/itineraryRepository';
 import type { Trip } from '../types';
-import { defaultTrip, initialTrip, cloneTrip, createSavedTrip, updateTrip, replaceOutdoorStop } from '../repositories/itineraryRepository';
 
-export function useItineraryState(route: Route, navigate: (name: RouteName, id?: string) => void, reset: (route: Route) => void) {
+export function useItineraryState(
+  route: Route,
+  navigate: (name: RouteName, id?: string) => void,
+  reset: (route: Route) => void,
+) {
   const [trips, setTrips] = useState<Trip[]>([initialTrip]);
   const [draft, setDraft] = useState<Trip>(defaultTrip);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const startCreate = () => { setEditingId(null); setDraft(cloneTrip(defaultTrip)); navigate('tripInfo'); };
+  const startCreate = () => {
+    setEditingId(null);
+    setDraft(cloneTrip(defaultTrip));
+    navigate('tripInfo');
+  };
   const saveDraft = () => {
     const saved = createSavedTrip(draft);
     setTrips((s) => [saved, ...s]);
@@ -31,10 +46,22 @@ export function useItineraryState(route: Route, navigate: (name: RouteName, id?:
     reset({ name: 'tripDetail', id: editingId });
   };
   const replaceSonTra = () => {
-    const trip = trips.find((item) => item.id === route.id) ?? trips.find((item) => item.id !== 'hoi-an');
+    const trip =
+      trips.find((item) => item.id === route.id) ?? trips.find((item) => item.id !== 'hoi-an');
     if (!trip) return;
     setTrips((s) => replaceOutdoorStop(s, trip.id));
     reset({ name: 'tripDetail', id: trip.id });
   };
-  return { trips, setTrips, draft, setDraft, startCreate, saveDraft, startEdit, saveEdit, cancelEdit, replaceSonTra };
+  return {
+    trips,
+    setTrips,
+    draft,
+    setDraft,
+    startCreate,
+    saveDraft,
+    startEdit,
+    saveEdit,
+    cancelEdit,
+    replaceSonTra,
+  };
 }

@@ -1,19 +1,52 @@
-import React from 'react';
-import { useApp } from '../providers/AppProvider';
+import type { ComponentType } from 'react';
 import { AuthScreen } from '../features/auth/screens/AuthScreen';
 import { ExploreScreen } from '../features/explore/screens/ExploreScreen';
+import { GameScreen } from '../features/game/screens/GameScreen';
 import { HomeScreen } from '../features/home/screens/HomeScreen';
 import { ItineraryScreen } from '../features/itinerary/screens/ItineraryScreen';
-import { GameScreen } from '../features/game/screens/GameScreen';
 import { ProfileScreen } from '../features/profile/screens/ProfileScreen';
+import { useApp } from '../providers/AppProvider';
+import type { RouteName } from './types';
+
+const routeScreens: Record<RouteName, ComponentType> = {
+  welcome: AuthScreen,
+  login: AuthScreen,
+  register: AuthScreen,
+  forgot: AuthScreen,
+  verify: AuthScreen,
+  reset: AuthScreen,
+  home: HomeScreen,
+  explore: ExploreScreen,
+  map: ExploreScreen,
+  place: ExploreScreen,
+  itinerary: ItineraryScreen,
+  tripInfo: ItineraryScreen,
+  tripPreferences: ItineraryScreen,
+  tripPlaces: ItineraryScreen,
+  tripReview: ItineraryScreen,
+  tripSaved: ItineraryScreen,
+  tripDetail: ItineraryScreen,
+  tripEdit: ItineraryScreen,
+  tripEditPlaces: ItineraryScreen,
+  weather: ItineraryScreen,
+  replacement: ItineraryScreen,
+  replacementConfirm: ItineraryScreen,
+  game: GameScreen,
+  gameIntro: GameScreen,
+  quiz: GameScreen,
+  quizResult: GameScreen,
+  quizAnswers: GameScreen,
+  rewards: GameScreen,
+  rewardDetail: GameScreen,
+  redeemed: GameScreen,
+  myRewards: GameScreen,
+  profile: ProfileScreen,
+  editProfile: ProfileScreen,
+  favorites: ProfileScreen,
+};
 
 export function AppNavigator() {
   const { route } = useApp();
-  if (['welcome', 'login', 'register', 'forgot', 'verify', 'reset'].includes(route.name)) return <AuthScreen />;
-  if (route.name === 'home') return <HomeScreen />;
-  if (['explore', 'map', 'place'].includes(route.name)) return <ExploreScreen />;
-  if (['itinerary', 'tripInfo', 'tripPreferences', 'tripPlaces', 'tripReview', 'tripSaved', 'tripDetail', 'tripEdit', 'tripEditPlaces', 'weather', 'replacement', 'replacementConfirm'].includes(route.name)) return <ItineraryScreen />;
-  if (['game', 'gameIntro', 'quiz', 'quizResult', 'quizAnswers', 'rewards', 'rewardDetail', 'redeemed', 'myRewards'].includes(route.name)) return <GameScreen />;
-  return <ProfileScreen />;
+  const Screen = routeScreens[route.name];
+  return <Screen />;
 }
-

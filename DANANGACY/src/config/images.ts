@@ -9,4 +9,3 @@ export const images = {
   chamArtifact: require('../../assets/images/asset-6b99d91a985a.png'),
   google: require('../../assets/images/asset-d1ce9c2af0b1.png'),
 };
-

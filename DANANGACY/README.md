@@ -1,6 +1,6 @@
 # DANANGACY
 
-Ứng dụng React Native + Expo để khám phá điểm đến Đà Nẵng, tạo lịch trình, tham gia thử thách và đổi ưu đãi mô phỏng. Thiết kế được dựng từ **74 frame SVG Figma export** do chủ dự án cung cấp, sau đó đối chiếu với file Figma trực tuyến. Xem [bộ tài liệu dự án](docs/docs/README.md) và [danh mục frame](docs/docs/figma/FRAME_INVENTORY.md).
+Ứng dụng React Native + Expo để khám phá điểm đến Đà Nẵng, tạo lịch trình, tham gia thử thách và đổi ưu đãi mô phỏng. Thiết kế được dựng từ **74 frame SVG Figma export** do chủ dự án cung cấp, sau đó đối chiếu với file Figma trực tuyến. Các bản thiết kế được lưu tại [design/exports](design/exports/).
 
 ## Chạy app
 
@@ -11,16 +11,20 @@ npm install
 npm start
 ```
 
-Mở Expo Go và quét mã QR, hoặc chọn Android Emulator nếu máy đủ dung lượng. Bản này dùng Expo SDK 57. Để chạy giao diện trên trình duyệt: `npm run web`.
+Mở Expo Go và quét mã QR, hoặc chọn Android Emulator nếu máy đủ dung lượng. Bản này dùng Expo SDK 58. Để chạy giao diện trên trình duyệt: `npm run web`.
 
 ## Kiểm tra
 
 ```powershell
 npm run typecheck
+npm run format:check
 npm run export:web
 npm run export:android
-python scripts/verify-assets.py
 ```
+
+Chạy `npm run format` để định dạng mã frontend. TypeScript bật kiểm tra import, biến và tham số không dùng. Các component dùng chung có kiểu props riêng; xử lý chỉnh giờ lịch trình và hiển thị đáp án quiz được gom vào component và ViewModel tương ứng.
+
+Các thư mục `.tmp/`, `.expo/`, `dist/` và `web-build/` là dữ liệu tạm hoặc kết quả sinh tự động, được bỏ qua trong Git và có thể xóa khi không dùng. `node_modules/` chứa dependency để chạy app; `assets/` và `design/` chứa tài nguyên và thiết kế tham chiếu.
 
 Ảnh gốc nằm tại [`assets/images`](assets/images/), được tham chiếu tương đối bằng `require(...)` trong [`src/config/images.ts`](src/config/images.ts). [`design/exports`](design/exports/) và [`design/previews`](design/previews/) là nguồn đối chiếu, không được dùng làm ảnh toàn màn hình khi app chạy. Ảnh chụp app để so sánh nằm tại [`design/comparisons`](design/comparisons/).
 
@@ -57,4 +61,4 @@ Bản hiện tại giữ bộ điều hướng stack sẵn có trong `src/naviga
 
 Đăng nhập mẫu bằng email hợp lệ và mật khẩu tối thiểu 8 ký tự (trường đã điền sẵn). Khách vẫn có thể vào Khám phá. Lịch trình, yêu thích, hồ sơ, phiên mẫu, điểm và ưu đãi được lưu trên thiết bị. Thời tiết, Google sign-in, bản đồ và mã ưu đãi là mô phỏng; app không gọi API thật.
 
-Ảnh chụp từ file Figma trực tuyến và ảnh chụp app được lưu trong [design/comparisons](design/comparisons/). Kết quả cùng các khác biệt còn lại được ghi trong [visual review](docs/docs/visual/REVIEW.md).
+Ảnh chụp từ file Figma trực tuyến và ảnh chụp app được lưu trong [design/comparisons](design/comparisons/).

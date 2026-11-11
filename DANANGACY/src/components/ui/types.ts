@@ -1,4 +1,4 @@
-import type React from 'react';
 import type { Ionicons } from '@expo/vector-icons';
+import type { ComponentProps } from 'react';
 
-export type IconName = React.ComponentProps<typeof Ionicons>['name'];
+export type IconName = ComponentProps<typeof Ionicons>['name'];
