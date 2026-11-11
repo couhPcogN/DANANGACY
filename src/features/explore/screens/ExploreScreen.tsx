@@ -1,17 +1,13 @@
-import React, { useMemo, useState } from 'react';
-import { Image, Pressable, ScrollView, View } from 'react-native';
+import React from 'react';
+import { Pressable, ScrollView, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { getPlace, images, places } from '../data';
-import { useApp } from '../state';
-import { colors } from '../theme';
-import { Button, Card, Field, Header, InfoBanner, Label, Pill, PlacePhoto, PlaceRow, Screen, SectionTitle, Tabs } from '../ui';
+import { places } from '../../explore/repositories/placeRepository';
+import { useExploreViewModel } from '../viewmodels/useExploreViewModel';
+import { colors } from '../../../theme';
+import { Button, Card, Field, Header, Label, Pill, PlacePhoto, PlaceRow, Screen, SectionTitle, Tabs } from '../../../components';
 
 export function ExploreScreen() {
-  const app = useApp();
-  const { route, navigate, back, favorites, toggleFavorite } = app;
-  const [query, setQuery] = useState('');
-  const [filter, setFilter] = useState('Tất cả');
-  const visible = useMemo(() => places.filter((p) => (filter === 'Tất cả' || filter === 'Bảo tàng' && p.tags.includes('Bảo tàng') || p.category === filter) && p.name.toLocaleLowerCase('vi').includes(query.toLocaleLowerCase('vi'))), [query, filter]);
+  const { app, route, navigate, back, favorites, toggleFavorite, query, setQuery, filter, setFilter, visible, place, saved } = useExploreViewModel();
 
   if (route.name === 'explore') return <Screen bottom={<Tabs active="explore" />} tabs>
     <Header title="Khám phá" subtitle="Tìm những điểm đến thú vị tại Đà Nẵng" actionIcon="map-outline" action={() => navigate('map')} />
@@ -32,8 +28,6 @@ export function ExploreScreen() {
     <PlaceRow place={places[0]} onPress={() => navigate('place', 'cham')} />
   </Screen>;
 
-  const place = getPlace(route.id ?? 'cham');
-  const saved = favorites.includes(place.id);
   return <Screen bottom={<View style={{ flexDirection: 'row', gap: 8 }}><Button title={saved ? 'Đã lưu địa điểm' : 'Lưu địa điểm'} icon={saved ? 'heart' : 'heart-outline'} onPress={() => toggleFavorite(place.id)} style={{ flex: 1 }} /><Button title="Xem bản đồ" kind="secondary" icon="map-outline" onPress={() => navigate('map')} style={{ flex: 1 }} /></View>}>
     <Header title="Chi tiết địa điểm" onBack={back} actionIcon={saved ? 'heart' : 'heart-outline'} action={() => toggleFavorite(place.id)} />
     <PlacePhoto source={place.id === 'bao-tang-dn' ? undefined : place.image} name={place.name} height={176} />

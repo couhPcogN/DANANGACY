@@ -11,7 +11,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 manifest = json.loads((ROOT / "design/exports/manifest.json").read_text(encoding="utf-8"))
 figma_nodes = json.loads((ROOT / "design/figma-nodes.json").read_text(encoding="utf-8"))
-data_code = (ROOT / "src/data.ts").read_text(encoding="utf-8")
+data_code = (ROOT / "src/config/images.ts").read_text(encoding="utf-8")
 expected = set(manifest["images"])
 for asset in expected:
     path = ROOT / "assets/images" / asset

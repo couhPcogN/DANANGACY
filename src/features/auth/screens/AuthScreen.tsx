@@ -1,20 +1,15 @@
-import React, { useState } from 'react';
-import { Image, Pressable, View } from 'react-native';
+import { Divider } from '../components/Divider';
+import { GoogleButton } from '../components/GoogleButton';
+import React from 'react';
+import { Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { images } from '../data';
-import { useApp } from '../state';
-import { colors } from '../theme';
-import { Button, Card, Field, Header, InfoBanner, Label, PlacePhoto, Screen } from '../ui';
+import { images } from '../../../config/images';
+import { useAuthViewModel } from '../viewmodels/useAuthViewModel';
+import { colors } from '../../../theme';
+import { Button, Card, Field, Header, InfoBanner, Label, PlacePhoto, Screen } from '../../../components';
 
 export function AuthScreen() {
-  const app = useApp();
-  const { route, navigate, back, login, notify } = app;
-  const [fullName, setFullName] = useState(app.name);
-  const [email, setEmail] = useState(app.email);
-  const [password, setPassword] = useState('12345678');
-  const [confirm, setConfirm] = useState('12345678');
-  const [code, setCode] = useState('123456');
-  const [showPassword, setShowPassword] = useState(false);
+  const { app, route, navigate, back, login, notify, fullName, setFullName, email, setEmail, password, setPassword, confirm, setConfirm, code, setCode, showPassword, setShowPassword, submitLogin, submitRegistration, requestResetCode, verifyCode, submitPasswordReset } = useAuthViewModel();
 
   if (route.name === 'welcome') return <Screen bottom={<View style={{ gap: 8 }}><Button title="Bắt đầu" onPress={() => navigate('login')} /><Button title="Khám phá ngay" kind="secondary" onPress={() => app.tab('explore')} /></View>}>
     <Label size={21} weight="bold" style={{ marginTop: 8, marginBottom: 24 }}>DANANGACY</Label>
@@ -34,7 +29,7 @@ export function AuthScreen() {
     <Field label="Mật khẩu" value={password} onChangeText={setPassword} secureTextEntry={!showPassword} icon={showPassword ? 'eye-outline' : 'eye-off-outline'} />
     <Pressable onPress={() => setShowPassword((s) => !s)} style={{ alignSelf: 'flex-end', marginBottom: 8 }}><Label size={12} color={colors.muted}>{showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}</Label></Pressable>
     <Pressable onPress={() => navigate('forgot')} style={{ marginBottom: 16 }}><Label size={13} weight="medium" color={colors.primaryDark}>Quên mật khẩu?</Label></Pressable>
-    <Button title="Đăng nhập" onPress={() => email.includes('@') && password.length >= 8 ? login() : notify('Vui lòng nhập email hợp lệ và mật khẩu ít nhất 8 ký tự.')} />
+    <Button title="Đăng nhập" onPress={submitLogin} />
     <Divider />
     <GoogleButton title="Đăng nhập bằng Google" onPress={() => notify('Đăng nhập Google chưa được kết nối trong bản demo.')} />
     <Label size={13} style={{ textAlign: 'center', marginVertical: 10 }}>Bạn chưa có tài khoản?</Label>
@@ -51,10 +46,7 @@ export function AuthScreen() {
     <Field label="Mật khẩu" value={password} onChangeText={setPassword} secureTextEntry icon="eye-off-outline" />
     <Field label="Xác nhận mật khẩu" value={confirm} onChangeText={setConfirm} secureTextEntry icon="eye-off-outline" />
     <InfoBanner>Sử dụng ít nhất 8 ký tự, gồm chữ và số. Không chia sẻ mật khẩu của bạn.</InfoBanner>
-    <Button title="Đăng ký" onPress={() => {
-      if (!fullName.trim() || !email.includes('@') || password.length < 8 || password !== confirm) return notify('Kiểm tra họ tên, email và hai mật khẩu trước khi đăng ký.');
-      app.setName(fullName.trim()); app.setEmail(email.trim()); login();
-    }} />
+    <Button title="Đăng ký" onPress={submitRegistration} />
     <Divider />
     <GoogleButton title="Đăng ký bằng Google" onPress={() => notify('Đăng ký Google chưa được kết nối trong bản demo.')} />
   </Screen>;
@@ -65,7 +57,7 @@ export function AuthScreen() {
     <Label size={25} weight="bold" style={{ marginTop: 18 }}>Lấy lại quyền truy cập</Label>
     <Label color={colors.muted} style={{ marginTop: 10, marginBottom: 24 }}>Nhập email đã đăng ký để nhận mã xác nhận và đặt lại mật khẩu.</Label>
     <Field label="Email đăng ký" value={email} onChangeText={setEmail} keyboardType="email-address" icon="mail-outline" />
-    <Button title="Gửi mã xác nhận" onPress={() => email.includes('@') ? navigate('verify') : notify('Vui lòng nhập email hợp lệ.')} />
+    <Button title="Gửi mã xác nhận" onPress={requestResetCode} />
     <Card style={{ marginTop: 16 }}><Label weight="bold">Kiểm tra hộp thư của bạn</Label><Label size={13} color={colors.muted} style={{ marginTop: 8 }}>Nếu email có tài khoản, bạn sẽ nhận được mã xác nhận gồm 6 chữ số. Đừng quên kiểm tra thư rác.</Label></Card>
   </Screen>;
 
@@ -77,7 +69,7 @@ export function AuthScreen() {
     <Label weight="medium" style={{ marginBottom: 22 }}>{email.replace(/(.{2}).*(@.*)/, '$1••••••••$2')}</Label>
     <Field label="Mã xác nhận" value={code} onChangeText={setCode} keyboardType="numeric" />
     <Label size={12} color={colors.muted} style={{ marginBottom: 16 }}>Mã trên chỉ là dữ liệu minh họa giao diện.</Label>
-    <Button title="Xác nhận mã" onPress={() => code.length === 6 ? navigate('reset') : notify('Mã xác nhận gồm 6 chữ số.')} />
+    <Button title="Xác nhận mã" onPress={verifyCode} />
     <Card style={{ marginTop: 16 }}><Label weight="bold">Bạn chưa nhận được mã?</Label><Label size={13} color={colors.muted} style={{ marginTop: 8 }}>Kiểm tra thư rác hoặc chờ hết đếm ngược để gửi lại.</Label></Card>
   </Screen>;
 
@@ -89,9 +81,9 @@ export function AuthScreen() {
     <Field label="Mật khẩu mới" value={password} onChangeText={setPassword} secureTextEntry icon="eye-off-outline" />
     <Field label="Xác nhận mật khẩu mới" value={confirm} onChangeText={setConfirm} secureTextEntry icon="eye-off-outline" />
     <InfoBanner>Sử dụng ít nhất 8 ký tự, gồm chữ và số. Không chia sẻ mật khẩu của bạn.</InfoBanner>
-    <Button title="Lưu mật khẩu mới" onPress={() => password.length >= 8 && password === confirm ? (notify('Đã đặt lại mật khẩu trong bản demo.'), navigate('login')) : notify('Hai mật khẩu chưa trùng khớp hoặc quá ngắn.')} />
+    <Button title="Lưu mật khẩu mới" onPress={submitPasswordReset} />
   </Screen>;
 }
 
-function Divider() { return <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 14, gap: 10 }}><View style={{ flex: 1, height: 1, backgroundColor: colors.border }} /><Label size={13} color={colors.muted}>Hoặc</Label><View style={{ flex: 1, height: 1, backgroundColor: colors.border }} /></View>; }
-function GoogleButton({ title, onPress }: { title: string; onPress: () => void }) { return <Card onPress={onPress} style={{ minHeight: 52, justifyContent: 'center', marginBottom: 0 }}><View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }}><Image source={images.google} style={{ width: 20, height: 20 }} /><Label weight="bold">{title}</Label></View></Card>; }
+
+

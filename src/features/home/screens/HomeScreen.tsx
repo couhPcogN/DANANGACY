@@ -1,14 +1,15 @@
 import React from 'react';
 import { Image, Pressable, ScrollView, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { getPlace, images, places } from '../data';
-import { useApp } from '../state';
-import { colors } from '../theme';
-import { Button, Card, Header, Label, Pill, PlacePhoto, Screen, SectionTitle, Tabs } from '../ui';
+import { images } from '../../../config/images';
+import { places } from '../../explore/repositories/placeRepository';
+import { useHomeViewModel } from '../viewmodels/useHomeViewModel';
+import { colors } from '../../../theme';
+import { Button, Card, Label, PlacePhoto, Screen, SectionTitle, Tabs } from '../../../components';
 
 export function HomeScreen() {
-  const app = useApp();
-  const { navigate, trips, name, startCreate } = app;
+  const { app, navigate, trips, name, startCreate } = useHomeViewModel();
+
   return <Screen bottom={<Tabs active="home" />} tabs>
     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 13 }}><View><Label size={21} weight="bold">Xin chào, {name.split(' ').at(-1)}</Label><Label size={12} color={colors.muted}>Hôm nay khám phá gì?</Label></View><Pressable onPress={() => app.tab('profile')} style={{ backgroundColor: colors.warm, width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center' }}><Label color={colors.primaryDark} weight="bold">{name.split(' ').at(-1)?.[0] ?? name[0]}</Label></Pressable></View>
     <View style={{ height: 132, overflow: 'hidden', borderRadius: 16, marginBottom: 10 }}><Image source={images.daNang} resizeMode="cover" style={{ width: '100%', height: 132 }} /><View style={{ position: 'absolute', left: 18, top: 10 }}><Label size={32} weight="bold" color={colors.white}>32°</Label><Label size={13} color={colors.white}>Đà Nẵng · Nắng nhẹ</Label></View><View style={{ position: 'absolute', bottom: 9, left: 16, right: 16, flexDirection: 'row', justifyContent: 'space-between' }}>{['14:00  ☼ 31°', '16:00  ☼ 30°', '18:00  ☂ 27°'].map((x) => <Label key={x} size={12} color={colors.white}>{x}</Label>)}</View></View>

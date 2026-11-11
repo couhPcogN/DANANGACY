@@ -1,23 +1,17 @@
-import React, { useState } from 'react';
-import { Image, Pressable, View } from 'react-native';
+import { RewardsContent } from '../components/RewardsContent';
+import React from 'react';
+import { View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { images, quiz } from '../data';
-import { useApp } from '../state';
-import { colors } from '../theme';
-import { Button, Card, Header, InfoBanner, Label, Pill, PlacePhoto, Progress, Screen, SectionTitle, Tabs } from '../ui';
+import { images } from '../../../config/images';
+import { quiz } from '../../game/repositories/gameRepository';
+import { useGameViewModel } from '../viewmodels/useGameViewModel';
+import { colors } from '../../../theme';
+import { Button, Card, Header, InfoBanner, Label, Pill, PlacePhoto, Progress, Screen, SectionTitle, Tabs } from '../../../components';
 
 const names = ['Hiện vật Chăm Pa', 'Dấu ấn bên sông Hàn', 'Di sản phố cổ Hội An'];
 
 export function GameScreen() {
-  const app = useApp();
-  const { route, navigate, back, quizIndex, quizSelected, quizConfirmed, quizAnswers, quizCompleted, points, startQuiz, selectAnswer, confirmAnswer, nextQuestion, rewardRedeemed, redeemReward, notify } = app;
-  const [gameTab, setGameTab] = useState<'challenge' | 'rewards'>(route.name === 'rewards' ? 'rewards' : 'challenge');
-  const visibleGameTab = route.name === 'rewards' ? 'rewards' : gameTab;
-  const [voucherFilter, setVoucherFilter] = useState<'active' | 'used'>('active');
-  const current = quiz[quizIndex];
-  const score = quizAnswers.filter((answer, index) => answer === quiz[index].correct).length;
-  const nextQuizIndex = quizAnswers.findIndex((answer) => answer === null);
-  const displayQuestion = quizCompleted ? 5 : Math.min(5, (nextQuizIndex < 0 ? 4 : nextQuizIndex) + 1);
+  const { app, route, navigate, back, quizIndex, quizSelected, quizConfirmed, quizAnswers, quizCompleted, points, startQuiz, selectAnswer, confirmAnswer, nextQuestion, rewardRedeemed, redeemReward, notify, gameTab, setGameTab, visibleGameTab, voucherFilter, setVoucherFilter, current, score, nextQuizIndex, displayQuestion, redeemSelectedReward } = useGameViewModel();
 
   if (route.name === 'game' || route.name === 'rewards') return <Screen bottom={<Tabs active="game" />} tabs>
     <Header title="Mini game" subtitle={visibleGameTab === 'challenge' ? 'Khám phá, học hỏi và tích điểm' : 'Mỗi trải nghiệm, thêm một phần quà'} />
@@ -41,7 +35,7 @@ export function GameScreen() {
 
   if (route.name === 'quizAnswers') return <Screen><Header title="Xem lại đáp án" onBack={back} /><Label color={colors.muted} style={{ marginBottom: 14 }}>Cả 5 câu · Hiện vật Chăm Pa</Label>{quiz.map((q, i) => <Card key={i}><Label weight="bold">Câu {i + 1}: {q.question}</Label><Label size={13} color={quizAnswers[i] === q.correct ? colors.success : colors.primaryDark} style={{ marginTop: 10 }}>Bạn chọn: {quizAnswers[i] === null ? 'Chưa trả lời' : q.answers[quizAnswers[i]!]}</Label><Label size={13} color={colors.success}>Đáp án đúng: {q.answers[q.correct]}</Label><Label size={12} color={colors.muted} style={{ marginTop: 8 }}>{q.explanation}</Label></Card>)}</Screen>;
 
-  if (route.name === 'rewardDetail') return <Screen bottom={<Button title="Đổi ưu đãi · 100 điểm" icon="ticket-outline" onPress={() => rewardRedeemed ? notify('Bạn đã đổi ưu đãi này.') : points < 100 ? notify('Bạn chưa đủ 100 điểm.') : redeemReward()} />}>
+  if (route.name === 'rewardDetail') return <Screen bottom={<Button title="Đổi ưu đãi · 100 điểm" icon="ticket-outline" onPress={redeemSelectedReward} />}>
     <Header title="Chi tiết ưu đãi" onBack={back} /><View style={{ backgroundColor: colors.warm, borderColor: colors.warmBorder, borderWidth: 1, borderRadius: 16, alignItems: 'center', padding: 30, marginTop: 22, marginBottom: 18 }}><Ionicons name="cafe-outline" size={42} color={colors.primaryDark} /><Label size={34} weight="bold" color={colors.primaryDark}>GIẢM 20%</Label><Label color={colors.primaryDark} size={12} weight="bold">Ưu đãi mô phỏng</Label></View><Label size={21} weight="bold">Cà phê bên sông Hàn</Label><Label color={colors.muted} style={{ marginVertical: 17 }}>Một khoảng nghỉ nhẹ nhàng trong hành trình khám phá Đà Nẵng.</Label><Card><Label weight="bold">100 điểm để đổi</Label><Label size={12} color={colors.muted}>Bạn có {points} điểm · Còn {Math.max(0, points - 100)} điểm sau khi đổi</Label><Label weight="bold" style={{ marginTop: 15 }}>Hiệu lực mô phỏng: 30 ngày</Label><Label size={12} color={colors.muted}>Tính từ ngày đổi ưu đãi.</Label></Card><SectionTitle title="Điều kiện sử dụng" /><Label size={13} color={colors.muted}>Giảm 20% cho 1 đồ uống, tối đa 30.000đ. Mỗi mã dùng 1 lần; không quy đổi thành tiền hoặc cộng dồn ưu đãi.</Label><InfoBanner>Chỉ dùng để trải nghiệm ứng dụng. Mã mô phỏng không có giá trị thanh toán tại cửa hàng.</InfoBanner>
   </Screen>;
 
@@ -52,4 +46,4 @@ export function GameScreen() {
   return <Screen bottom={<Tabs active="game" />} tabs><Header title="Ưu đãi của tôi" onBack={back} /><View style={{ flexDirection: 'row', gap: 8, marginBottom: 15 }}><Pill title={`Còn hiệu lực · ${rewardRedeemed ? 1 : 0}`} selected={voucherFilter === 'active'} onPress={() => setVoucherFilter('active')} /><Pill title="Đã dùng · 0" selected={voucherFilter === 'used'} onPress={() => setVoucherFilter('used')} /></View><InfoBanner>Ưu đãi mô phỏng · Không có giá trị thanh toán hoặc cam kết từ đối tác thực tế.</InfoBanner>{rewardRedeemed && voucherFilter === 'active' ? <Card><Pill title="Còn hiệu lực · Mô phỏng" tone="green" /><Label weight="bold" style={{ marginTop: 14 }}>Cà phê bên sông Hàn</Label><Label size={12} color={colors.muted}>Giảm 20% · Tối đa 30.000đ</Label><Label size={21} weight="bold" color={colors.primaryDark} style={{ marginVertical: 14 }}>DEMO-HAN-1511</Label><Label size={12} color={colors.muted}>Đổi ngày 15/11/2026 · Hết hạn 15/12/2026</Label><Button title="Xem điều kiện ưu đãi" kind="secondary" onPress={() => navigate('rewardDetail')} style={{ marginTop: 14 }} /></Card> : <Card><Label color={colors.muted}>Chưa có ưu đãi trong mục này.</Label></Card>}<InfoBanner icon="extension-puzzle-outline">{points} điểm còn lại. Tiếp tục thử thách di sản để tích thêm điểm.</InfoBanner></Screen>;
 }
 
-function RewardsContent({ points, onOpen, onUnavailable }: { points: number; onOpen: () => void; onUnavailable: (s: string) => void }) { return <><InfoBanner icon="extension-puzzle-outline">ĐIỂM DI SẢN CỦA BẠN{'\n'}{points} điểm · Từ thử thách Hiện vật Chăm Pa</InfoBanner><InfoBanner>Tất cả ưu đãi và đổi điểm là mô phỏng, không phải cam kết từ đối tác thực tế.</InfoBanner><SectionTitle title="Đổi điểm, thêm trải nghiệm" /><Card><Label weight="bold">☕  Cà phê bên sông Hàn</Label><Label size={12} color={colors.muted}>Giảm 20% · Ưu đãi mô phỏng</Label><View style={{ marginVertical: 9 }}><Pill title="100 điểm" selected /></View><Button title="Xem ưu đãi" kind="secondary" onPress={onOpen} /></Card><Card onPress={() => onUnavailable('Ưu đãi này sẽ có trong bản tiếp theo.')}><Label weight="bold">Bưu thiếp Đà Nẵng</Label><Label size={12} color={colors.muted}>Một bộ bưu thiếp · Mô phỏng · 80 điểm</Label></Card><Card onPress={() => onUnavailable('Ưu đãi này sẽ có trong bản tiếp theo.')}><Label weight="bold">Trải nghiệm thủ công</Label><Label size={12} color={colors.muted}>Giảm 15% · Mô phỏng · 150 điểm</Label></Card></>; }
+

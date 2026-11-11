@@ -1,47 +1,23 @@
-import React, { useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { TripSummary } from '../components/TripSummary';
+import { StopCard } from '../components/StopCard';
+import { TimeEditor } from '../components/TimeEditor';
+import React from 'react';
+import { Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { defaultTrip, getPlace, hoiAnNames, images, places, Stop, Trip } from '../data';
-import { useApp } from '../state';
-import { colors } from '../theme';
-import { Button, Card, Field, Header, InfoBanner, Label, Pill, PlacePhoto, PlaceRow, Progress, Screen, SectionTitle, Tabs } from '../ui';
+import { images } from '../../../config/images';
+import { getPlace, places } from '../../explore/repositories/placeRepository';
+import { hoiAnNames } from '../../itinerary/repositories/itineraryRepository';
+import { useItineraryViewModel } from '../viewmodels/useItineraryViewModel';
+import { colors } from '../../../theme';
+import { Button, Card, Field, Header, InfoBanner, Label, Pill, PlacePhoto, PlaceRow, Progress, Screen, SectionTitle, Tabs } from '../../../components';
 
 const stopName = (id: string) => hoiAnNames[id] ?? getPlace(id).name;
-const timeValue = (time: string) => /^([01]\d|2[0-3]):[0-5]\d$/.test(time) ? Number(time.slice(0, 2)) * 60 + Number(time.slice(3)) : -1;
-export function validateStops(stops: Stop[]): string | null {
-  for (let i = 0; i < stops.length; i++) {
-    const start = timeValue(stops[i].start), end = timeValue(stops[i].end);
-    if (start < 0 || end < 0 || start >= end) return 'Giờ bắt đầu phải sớm hơn giờ kết thúc và đúng định dạng HH:mm.';
-    if (start < 360 || end > 1320) return 'Khung giờ nằm ngoài giờ tham quan gợi ý 06:00–22:00.';
-    if (stops.some((other, j) => j !== i && timeValue(other.start) < end && timeValue(other.end) > start)) return 'Khung giờ này trùng với một điểm đến khác.';
-  }
-  return null;
-}
 
-function TripSummary({ trip }: { trip: Trip }) { return <><Label size={21} weight="bold" style={{ marginBottom: 14 }}>{trip.title}</Label><View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 14 }}><Ionicons name="calendar-outline" size={21} color={colors.ink} /><View><Label size={14} weight="medium">{trip.date} · {trip.duration} ngày</Label><Label size={12} color={colors.muted}>{trip.stops.length} điểm đến · Nhịp độ {trip.pace.toLowerCase()}</Label></View></View></>; }
 
-function StopCard({ stop, onPress, index, editing = false }: { stop: Stop; onPress?: () => void; index?: number; editing?: boolean }) { return <Card onPress={onPress}><View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}><Label size={12} weight="bold" color={colors.primaryDark}>{stop.start} – {stop.end}{editing ? ' · Khung giờ gợi ý' : ''}</Label>{onPress ? <Ionicons name={editing ? 'create-outline' : 'ellipsis-horizontal'} size={19} color={colors.primaryDark} /> : null}</View><View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8, gap: 10 }}><Ionicons name="location-outline" size={22} color={colors.ink} /><View><Label size={14} weight="bold">{stopName(stop.placeId)}</Label><Label size={12} color={colors.muted}>{stop.placeId === 'cham' || stop.placeId === 'bao-tang-dn' ? 'Trong nhà · Tìm hiểu di sản' : 'Ngoài trời · Khám phá cảnh quan'}</Label></View></View></Card>; }
+
 
 export function ItineraryScreen() {
-  const app = useApp();
-  const { route, back, navigate, trips, draft, setDraft, startCreate, saveDraft, startEdit, saveEdit, cancelEdit, notify, replaceSonTra } = app;
-  const [filter, setFilter] = useState('Sắp tới');
-  const [search, setSearch] = useState('');
-  const [selectedStop, setSelectedStop] = useState(0);
-  const [editingTime, setEditingTime] = useState(false);
-  const [startTime, setStartTime] = useState('14:00');
-  const [endTime, setEndTime] = useState('16:00');
-  const [editDate, setEditDate] = useState(draft.date);
-
-  const selectedTrip = trips.find((t) => t.id === route.id) ?? trips[0];
-  const setTrip = (patch: Partial<Trip>) => setDraft({ ...draft, ...patch });
-  const timeError = editingTime ? validateStops(draft.stops.map((s, i) => i === selectedStop ? { ...s, start: startTime, end: endTime } : s)) : null;
-  const applyTime = () => {
-    const stops = draft.stops.map((s, i) => i === selectedStop ? { ...s, start: startTime, end: endTime } : s);
-    const error = validateStops(stops);
-    if (error) return notify(error);
-    setDraft({ ...draft, stops }); setEditingTime(false);
-  };
+  const { app, route, back, navigate, trips, draft, setDraft, startCreate, saveDraft, startEdit, saveEdit, cancelEdit, notify, replaceSonTra, filter, setFilter, search, setSearch, selectedStop, setSelectedStop, editingTime, setEditingTime, startTime, setStartTime, endTime, setEndTime, editDate, setEditDate, selectedTrip, setTrip, timeError, applyTime, continueFromInfo, submitDraft, submitEdit } = useItineraryViewModel();
 
   if (route.name === 'itinerary') return <Screen bottom={<Tabs active="itinerary" />} tabs>
     <Header title="Lịch trình của tôi" subtitle="Lưu giữ những hành trình đáng nhớ" />
@@ -51,10 +27,7 @@ export function ItineraryScreen() {
     <Button title="Tạo lịch trình mới" icon="add-outline" onPress={startCreate} style={{ marginTop: 20 }} />
   </Screen>;
 
-  if (route.name === 'tripInfo') return <Screen bottom={<Button title="Tiếp tục" icon="arrow-forward" onPress={() => {
-    if (!draft.title.trim() || !/^\d{2}\/\d{2}\/\d{4}$/.test(draft.date)) return notify('Vui lòng nhập tên lịch trình và ngày theo DD/MM/YYYY.');
-    navigate('tripPreferences');
-  }} />}>
+  if (route.name === 'tripInfo') return <Screen bottom={<Button title="Tiếp tục" icon="arrow-forward" onPress={continueFromInfo} />}>
     <Header title="Thông tin chuyến đi" onBack={back} /><Label size={12} color={colors.primaryDark} weight="bold">Bước 1/3 · Tạo lịch trình</Label><Progress step={1} total={3} />
     <Label size={21} weight="bold" style={{ marginVertical: 12 }}>Chuyến đi của bạn</Label><Label color={colors.muted} style={{ marginBottom: 20 }}>Bắt đầu với tên và thời gian. Bạn có thể chỉnh sửa sau khi lưu.</Label>
     <Field label="Tên lịch trình" value={draft.title} onChangeText={(v) => setTrip({ title: v })} icon="pencil-outline" />
@@ -85,11 +58,7 @@ export function ItineraryScreen() {
     </Screen>;
   }
 
-  if (route.name === 'tripReview') return <Screen bottom={<Button title="Lưu lịch trình" icon="bookmark-outline" onPress={() => {
-    const error = validateStops(draft.stops);
-    if (error) return notify(error);
-    saveDraft();
-  }} />}>
+  if (route.name === 'tripReview') return <Screen bottom={<Button title="Lưu lịch trình" icon="bookmark-outline" onPress={submitDraft} />}>
     <Header title="Xem lại lịch trình" onBack={back} /><Pill title="Xem lại & xác nhận trước khi lưu" selected /><View style={{ marginTop: 15 }}><TripSummary trip={draft} /></View>
     <Card><Label weight="bold">Ngày 1 / {draft.duration} · {draft.date}</Label></Card><Label size={13} color={colors.muted} style={{ marginBottom: 14 }}>Khung giờ gợi ý · Chỉnh sửa trước khi lưu</Label>
     {draft.stops.map((s, i) => <StopCard key={`${s.placeId}-${i}`} stop={s} editing onPress={() => { setSelectedStop(i); setStartTime(s.start); setEndTime(s.end); setEditingTime(true); }} />)}
@@ -110,7 +79,7 @@ export function ItineraryScreen() {
     <Label size={12} color={colors.muted}>Chạm bút chì để chỉnh giờ. Chỉ cập nhật khi Áp dụng; giữ nguyên giờ đã duyệt.</Label>
   </Screen>;
 
-  if (route.name === 'tripEdit') return <Screen bottom={<View style={{ gap: 8 }}><Button title="Lưu thay đổi" icon="checkmark" onPress={() => { const error = validateStops(draft.stops); if (error) return notify(error); if (!/^\d{2}\/\d{2}\/\d{4}$/.test(draft.date)) return notify('Ngày không hợp lệ. Dùng định dạng DD/MM/YYYY.'); saveEdit(); }} /><Button title="Hủy thay đổi" kind="secondary" onPress={cancelEdit} /></View>}>
+  if (route.name === 'tripEdit') return <Screen bottom={<View style={{ gap: 8 }}><Button title="Lưu thay đổi" icon="checkmark" onPress={submitEdit} /><Button title="Hủy thay đổi" kind="secondary" onPress={cancelEdit} /></View>}>
     <Header title="Chỉnh sửa lịch trình" onBack={cancelEdit} /><Field label="Tên lịch trình" value={draft.title} onChangeText={(v) => setTrip({ title: v })} /><Field label="Ngày khởi hành" value={draft.date} onChangeText={(v) => setTrip({ date: v })} />
     <SectionTitle title="Điểm đến và khung giờ" />{draft.stops.map((s, i) => <StopCard key={`${s.placeId}-${i}`} stop={s} editing onPress={() => { setSelectedStop(i); setStartTime(s.start); setEndTime(s.end); setEditingTime(true); }} />)}
     {editingTime ? <TimeEditor start={startTime} end={endTime} setStart={setStartTime} setEnd={setEndTime} apply={applyTime} cancel={() => setEditingTime(false)} error={timeError} /> : null}
@@ -135,4 +104,4 @@ export function ItineraryScreen() {
   </Screen>;
 }
 
-function TimeEditor({ start, end, setStart, setEnd, apply, cancel, error }: { start: string; end: string; setStart: (v: string) => void; setEnd: (v: string) => void; apply: () => void; cancel: () => void; error: string | null }) { return <Card style={{ borderColor: colors.primary }}><Label weight="bold" style={{ marginBottom: 12 }}>Chỉnh khung giờ</Label><View style={{ flexDirection: 'row', gap: 8 }}><View style={{ flex: 1 }}><Field label="Bắt đầu (HH:mm)" value={start} onChangeText={setStart} /></View><View style={{ flex: 1 }}><Field label="Kết thúc (HH:mm)" value={end} onChangeText={setEnd} /></View></View>{error ? <InfoBanner>{error}</InfoBanner> : <InfoBanner tone="green">Khung giờ hợp lệ, có thể áp dụng.</InfoBanner>}<View style={{ flexDirection: 'row', gap: 8 }}><Button title="Hủy" kind="outline" onPress={cancel} style={{ flex: 1 }} /><Button title="Áp dụng" disabled={!!error} onPress={apply} style={{ flex: 1 }} /></View></Card>; }
+

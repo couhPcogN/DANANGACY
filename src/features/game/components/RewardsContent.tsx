@@ -1,0 +1,6 @@
+import React from 'react';
+import { View } from 'react-native';
+import { colors } from '../../../theme';
+import { Button, Card, InfoBanner, Label, Pill, SectionTitle } from '../../../components';
+
+export function RewardsContent({ points, onOpen, onUnavailable }: { points: number; onOpen: () => void; onUnavailable: (s: string) => void }) { return <><InfoBanner icon="extension-puzzle-outline">ĐIỂM DI SẢN CỦA BẠN{'\n'}{points} điểm · Từ thử thách Hiện vật Chăm Pa</InfoBanner><InfoBanner>Tất cả ưu đãi và đổi điểm là mô phỏng, không phải cam kết từ đối tác thực tế.</InfoBanner><SectionTitle title="Đổi điểm, thêm trải nghiệm" /><Card><Label weight="bold">☕  Cà phê bên sông Hàn</Label><Label size={12} color={colors.muted}>Giảm 20% · Ưu đãi mô phỏng</Label><View style={{ marginVertical: 9 }}><Pill title="100 điểm" selected /></View><Button title="Xem ưu đãi" kind="secondary" onPress={onOpen} /></Card><Card onPress={() => onUnavailable('Ưu đãi này sẽ có trong bản tiếp theo.')}><Label weight="bold">Bưu thiếp Đà Nẵng</Label><Label size={12} color={colors.muted}>Một bộ bưu thiếp · Mô phỏng · 80 điểm</Label></Card><Card onPress={() => onUnavailable('Ưu đãi này sẽ có trong bản tiếp theo.')}><Label weight="bold">Trải nghiệm thủ công</Label><Label size={12} color={colors.muted}>Giảm 15% · Mô phỏng · 150 điểm</Label></Card></>; }
