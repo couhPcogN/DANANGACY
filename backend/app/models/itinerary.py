@@ -1,6 +1,5 @@
 from datetime import date as DateValue
 from datetime import datetime
-from uuid import UUID
 
 from sqlalchemy import (
     CheckConstraint,
@@ -15,11 +14,11 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
-from app.models.common import Timestamps, UUIDPrimaryKey
+from app.models.common import IntegerPrimaryKey, Timestamps
 from app.models.destination import Destination
 
 
-class Itinerary(UUIDPrimaryKey, Timestamps, Base):
+class Itinerary(IntegerPrimaryKey, Timestamps, Base):
     __tablename__ = "itineraries"
     __table_args__ = (
         CheckConstraint("duration BETWEEN 1 AND 3", name="duration_range"),
@@ -46,7 +45,7 @@ class Itinerary(UUIDPrimaryKey, Timestamps, Base):
     )
 
 
-class ItineraryItem(UUIDPrimaryKey, Base):
+class ItineraryItem(IntegerPrimaryKey, Base):
     __tablename__ = "itinerary_items"
     __table_args__ = (
         UniqueConstraint("itinerary_id", "position"),
@@ -54,10 +53,10 @@ class ItineraryItem(UUIDPrimaryKey, Base):
         CheckConstraint("planned_start_at < planned_end_at", name="time_order"),
     )
 
-    itinerary_id: Mapped[UUID] = mapped_column(
+    itinerary_id: Mapped[int] = mapped_column(
         ForeignKey("itineraries.id", ondelete="CASCADE"), index=True
     )
-    destination_id: Mapped[UUID] = mapped_column(ForeignKey("destinations.id"), index=True)
+    destination_id: Mapped[int] = mapped_column(ForeignKey("destinations.id"), index=True)
     position: Mapped[int]
     planned_start_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     planned_end_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))

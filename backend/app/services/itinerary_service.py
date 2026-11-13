@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime, time, timedelta
-from uuid import UUID
 
 from pydantic import ValidationError
 from sqlalchemy import func
@@ -103,7 +102,7 @@ class ItineraryService:
             for itinerary in self.repository.list(offset=offset, limit=limit)
         ]
 
-    def get(self, itinerary_id: UUID) -> ItineraryRead:
+    def get(self, itinerary_id: int) -> ItineraryRead:
         return to_itinerary_read(self._get_or_raise(itinerary_id))
 
     def create(self, payload: ItineraryCreate) -> ItineraryRead:
@@ -124,7 +123,7 @@ class ItineraryService:
             result = to_itinerary_read(itinerary)
         return result
 
-    def update(self, itinerary_id: UUID, payload: ItineraryUpdate) -> ItineraryRead:
+    def update(self, itinerary_id: int, payload: ItineraryUpdate) -> ItineraryRead:
         with self.session.begin():
             itinerary = self._get_or_raise(itinerary_id, for_update=True)
             changes = payload.model_dump(exclude_unset=True)
@@ -161,14 +160,14 @@ class ItineraryService:
             result = to_itinerary_read(itinerary)
         return result
 
-    def delete(self, itinerary_id: UUID) -> None:
+    def delete(self, itinerary_id: int) -> None:
         with self.session.begin():
             itinerary = self._get_or_raise(itinerary_id, for_update=True)
             itinerary.deleted_at = func.now()
             itinerary.updated_at = func.now()
             itinerary.version += 1
 
-    def _get_or_raise(self, itinerary_id: UUID, *, for_update: bool = False) -> Itinerary:
+    def _get_or_raise(self, itinerary_id: int, *, for_update: bool = False) -> Itinerary:
         itinerary = self.repository.get(itinerary_id, for_update=for_update)
         if itinerary is None:
             raise ItineraryNotFoundError()

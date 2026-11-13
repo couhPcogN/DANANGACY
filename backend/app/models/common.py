@@ -1,15 +1,14 @@
 from datetime import datetime
-from uuid import UUID, uuid4
 
-from sqlalchemy import JSON, DateTime, Uuid, func
+from sqlalchemy import JSON, DateTime, Integer, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 JSON_DOCUMENT = JSON().with_variant(JSONB(), "postgresql")
 
 
-class UUIDPrimaryKey:
-    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+class IntegerPrimaryKey:
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
 
 
 class Timestamps:

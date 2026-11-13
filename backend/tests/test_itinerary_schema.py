@@ -139,7 +139,7 @@ def test_0001_data_survives_upgrade_and_supported_downgrade(db_engine: Engine) -
         sa.inspect(db_engine).get_table_names()
     )
     with Session(db_engine) as session:
-        restored = ItineraryService(session).get(itinerary_id)
+        restored = ItineraryService(session).list(offset=0, limit=10)[0]
         assert restored.title == "Long legacy title " * 8
         assert len(restored.stops) == 9
         assert all(stop.day == 2 and stop.place_id == "legacy-place" for stop in restored.stops)

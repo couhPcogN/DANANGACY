@@ -1,7 +1,6 @@
 from datetime import date as DateValue
 from datetime import datetime, time
 from typing import Annotated, Literal
-from uuid import UUID
 
 from pydantic import (
     BaseModel,
@@ -76,7 +75,7 @@ class ItineraryStopRead(BaseModel):
 class ItineraryRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: UUID
+    id: int
     title: str
     date: DateValue
     duration: int

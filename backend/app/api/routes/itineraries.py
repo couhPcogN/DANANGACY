@@ -1,5 +1,4 @@
 from typing import Annotated
-from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Response, status
 
@@ -26,18 +25,18 @@ def create_itinerary(payload: ItineraryCreate, service: Service) -> ItineraryRea
 
 
 @router.get("/{itinerary_id}", response_model=ItineraryRead)
-def get_itinerary(itinerary_id: UUID, service: Service) -> ItineraryRead:
+def get_itinerary(itinerary_id: int, service: Service) -> ItineraryRead:
     return service.get(itinerary_id)
 
 
 @router.patch("/{itinerary_id}", response_model=ItineraryRead)
 def update_itinerary(
-    itinerary_id: UUID, payload: ItineraryUpdate, service: Service
+    itinerary_id: int, payload: ItineraryUpdate, service: Service
 ) -> ItineraryRead:
     return service.update(itinerary_id, payload)
 
 
 @router.delete("/{itinerary_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_itinerary(itinerary_id: UUID, service: Service) -> Response:
+def delete_itinerary(itinerary_id: int, service: Service) -> Response:
     service.delete(itinerary_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

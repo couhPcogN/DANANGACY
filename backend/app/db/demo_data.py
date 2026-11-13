@@ -1,6 +1,4 @@
-from uuid import NAMESPACE_URL, UUID, uuid5
-
-# Stable IDs allow the frontend's existing string IDs to be mapped to destination UUIDs.
+# Stable slugs link mobile demo places to database-generated IDs.
 DEMO_DESTINATIONS = (
     ("cham", "Bảo tàng Điêu khắc Chăm", "INDOOR"),
     ("son-tra", "Bán đảo Sơn Trà", "OUTDOOR"),
@@ -11,7 +9,3 @@ DEMO_DESTINATIONS = (
     ("tan-ky", "Nhà cổ Tấn Ký", "INDOOR"),
     ("hoai-river", "Bờ sông Hoài", "OUTDOOR"),
 )
-
-
-def destination_uuid(slug: str) -> UUID:
-    return uuid5(NAMESPACE_URL, f"danangacy:destination:{slug}")

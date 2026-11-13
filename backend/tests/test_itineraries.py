@@ -1,5 +1,3 @@
-from uuid import uuid4
-
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import event, func, select
@@ -15,6 +13,8 @@ def test_create_list_and_get_are_persisted(client: TestClient, payload: dict) ->
     response = client.post(API, json=payload)
     assert response.status_code == 201
     itinerary = response.json()
+    assert isinstance(itinerary["id"], int)
+    assert itinerary["id"] > 0
     assert itinerary["title"] == payload["title"]
     assert itinerary["stops"] == payload["stops"]
     assert itinerary["created_at"]
@@ -62,7 +62,7 @@ def test_delete_hides_itinerary_and_preserves_history(
 @pytest.mark.parametrize("method", ["get", "patch", "delete"])
 def test_missing_itinerary_returns_404(client: TestClient, method: str) -> None:
     arguments = {"json": {"title": "Tên mới"}} if method == "patch" else {}
-    assert getattr(client, method)(f"{API}/{uuid4()}", **arguments).status_code == 404
+    assert getattr(client, method)(f"{API}/{2147483647}", **arguments).status_code == 404
 
 
 @pytest.mark.parametrize(
@@ -154,6 +154,6 @@ def test_database_failure_rolls_back_deleted_stops(client: TestClient, payload: 
 
 
 def test_invalid_identifier_and_pagination(client: TestClient) -> None:
-    assert client.get(f"{API}/not-a-uuid").status_code == 422
+    assert client.get(f"{API}/not-an-integer").status_code == 422
     assert client.get(API, params={"limit": 101}).status_code == 422
     assert client.get(API, params={"offset": -1}).status_code == 422

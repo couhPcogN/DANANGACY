@@ -1,5 +1,3 @@
-from uuid import UUID
-
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
@@ -27,7 +25,7 @@ class ItineraryRepository:
         )
         return list(self.session.scalars(statement))
 
-    def get(self, itinerary_id: UUID, *, for_update: bool = False) -> Itinerary | None:
+    def get(self, itinerary_id: int, *, for_update: bool = False) -> Itinerary | None:
         statement = self._query().where(Itinerary.id == itinerary_id)
         if for_update:
             statement = statement.with_for_update()

@@ -4,10 +4,10 @@ from sqlalchemy import CheckConstraint, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
-from app.models.common import JSON_DOCUMENT, Timestamps, UUIDPrimaryKey
+from app.models.common import JSON_DOCUMENT, IntegerPrimaryKey, Timestamps
 
 
-class Destination(UUIDPrimaryKey, Timestamps, Base):
+class Destination(IntegerPrimaryKey, Timestamps, Base):
     __tablename__ = "destinations"
     __table_args__ = (
         CheckConstraint("environment IN ('INDOOR', 'OUTDOOR', 'MIXED')", name="environment_values"),

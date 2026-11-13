@@ -50,7 +50,13 @@ def db_engine(tmp_path: Path) -> Iterator[Engine]:
 
         @event.listens_for(engine, "connect")
         def enable_foreign_keys(connection, _record) -> None:
+            connection.isolation_level = None
             connection.execute("PRAGMA foreign_keys=ON")
+
+        @event.listens_for(engine, "begin")
+        def begin_sqlite_transaction(connection) -> None:
+            # SQLite's legacy driver mode otherwise commits DDL outside a transaction.
+            connection.exec_driver_sql("BEGIN")
 
     try:
         migrate(engine)

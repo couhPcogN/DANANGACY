@@ -23,6 +23,8 @@ Backend FastAPI đã có API thêm, sửa, xóa và đọc lịch trình, kết 
 
 Thiết kế 15 bảng nghiệp vụ và cách nâng database từ revision 0001 lên 0002 được mô tả trong [tài liệu schema database](docs/DATABASE_SCHEMA.md).
 
+Revision mới nhất là 0003, chuyển UUID sang ID số nguyên. Xem [hướng dẫn migration ID](docs/INTEGER_IDS_MIGRATION.md) trước khi chạy.
+
 Hai phần được quản lý cùng lịch sử Git trên nhánh `main`. Chạy lệnh Git từ thư mục gốc repository.
 
 ## Quy trình phát triển

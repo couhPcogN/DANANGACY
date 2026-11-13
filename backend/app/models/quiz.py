@@ -1,5 +1,4 @@
 from datetime import datetime
-from uuid import UUID
 
 from sqlalchemy import (
     Boolean,
@@ -16,10 +15,10 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
-from app.models.common import Timestamps, UUIDPrimaryKey
+from app.models.common import IntegerPrimaryKey, Timestamps
 
 
-class Quiz(UUIDPrimaryKey, Timestamps, Base):
+class Quiz(IntegerPrimaryKey, Timestamps, Base):
     __tablename__ = "quizzes"
     __table_args__ = (
         CheckConstraint("pass_score BETWEEN 0 AND 5", name="pass_score_range"),
@@ -28,7 +27,7 @@ class Quiz(UUIDPrimaryKey, Timestamps, Base):
         CheckConstraint("status IN ('DRAFT', 'PUBLISHED', 'ARCHIVED')", name="status_values"),
     )
 
-    destination_id: Mapped[UUID] = mapped_column(ForeignKey("destinations.id"), index=True)
+    destination_id: Mapped[int] = mapped_column(ForeignKey("destinations.id"), index=True)
     title: Mapped[str] = mapped_column(String(200))
     description: Mapped[str | None] = mapped_column(Text)
     pass_score: Mapped[int] = mapped_column(default=3, server_default="3")
@@ -37,34 +36,34 @@ class Quiz(UUIDPrimaryKey, Timestamps, Base):
     status: Mapped[str] = mapped_column(String(20), default="DRAFT", server_default="DRAFT")
 
 
-class QuizQuestion(UUIDPrimaryKey, Base):
+class QuizQuestion(IntegerPrimaryKey, Base):
     __tablename__ = "quiz_questions"
     __table_args__ = (
         UniqueConstraint("quiz_id", "position"),
         CheckConstraint("position >= 0", name="position_nonnegative"),
     )
 
-    quiz_id: Mapped[UUID] = mapped_column(ForeignKey("quizzes.id", ondelete="CASCADE"))
+    quiz_id: Mapped[int] = mapped_column(ForeignKey("quizzes.id", ondelete="CASCADE"))
     question_text: Mapped[str] = mapped_column(Text)
     image_url: Mapped[str | None] = mapped_column(Text)
     position: Mapped[int]
     explanation: Mapped[str | None] = mapped_column(Text)
 
 
-class QuizOption(UUIDPrimaryKey, Base):
+class QuizOption(IntegerPrimaryKey, Base):
     __tablename__ = "quiz_options"
     __table_args__ = (
         UniqueConstraint("question_id", "position"),
         CheckConstraint("position BETWEEN 0 AND 3", name="position_range"),
     )
 
-    question_id: Mapped[UUID] = mapped_column(ForeignKey("quiz_questions.id", ondelete="CASCADE"))
+    question_id: Mapped[int] = mapped_column(ForeignKey("quiz_questions.id", ondelete="CASCADE"))
     option_text: Mapped[str] = mapped_column(Text)
     position: Mapped[int]
     is_correct: Mapped[bool] = mapped_column(Boolean, default=False, server_default=false())
 
 
-class QuizAttempt(UUIDPrimaryKey, Base):
+class QuizAttempt(IntegerPrimaryKey, Base):
     __tablename__ = "quiz_attempts"
     __table_args__ = (
         CheckConstraint("status IN ('IN_PROGRESS', 'SUBMITTED', 'EXPIRED')", name="status_values"),
@@ -76,7 +75,7 @@ class QuizAttempt(UUIDPrimaryKey, Base):
     )
 
     owner_uid: Mapped[str] = mapped_column(String(128), ForeignKey("users.uid"))
-    quiz_id: Mapped[UUID] = mapped_column(ForeignKey("quizzes.id"))
+    quiz_id: Mapped[int] = mapped_column(ForeignKey("quizzes.id"))
     status: Mapped[str] = mapped_column(
         String(20), default="IN_PROGRESS", server_default="IN_PROGRESS"
     )
@@ -87,17 +86,17 @@ class QuizAttempt(UUIDPrimaryKey, Base):
     submitted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
-class QuizAttemptAnswer(UUIDPrimaryKey, Base):
+class QuizAttemptAnswer(IntegerPrimaryKey, Base):
     __tablename__ = "quiz_attempt_answers"
     __table_args__ = (UniqueConstraint("attempt_id", "question_id"),)
 
-    attempt_id: Mapped[UUID] = mapped_column(ForeignKey("quiz_attempts.id", ondelete="CASCADE"))
-    question_id: Mapped[UUID] = mapped_column(ForeignKey("quiz_questions.id"))
-    selected_option_id: Mapped[UUID] = mapped_column(ForeignKey("quiz_options.id"))
+    attempt_id: Mapped[int] = mapped_column(ForeignKey("quiz_attempts.id", ondelete="CASCADE"))
+    question_id: Mapped[int] = mapped_column(ForeignKey("quiz_questions.id"))
+    selected_option_id: Mapped[int] = mapped_column(ForeignKey("quiz_options.id"))
     is_correct: Mapped[bool]
 
 
-class RewardGrant(UUIDPrimaryKey, Base):
+class RewardGrant(IntegerPrimaryKey, Base):
     __tablename__ = "reward_grants"
     __table_args__ = (
         UniqueConstraint("owner_uid", "quiz_id"),
@@ -105,7 +104,7 @@ class RewardGrant(UUIDPrimaryKey, Base):
     )
 
     owner_uid: Mapped[str] = mapped_column(String(128), ForeignKey("users.uid"))
-    quiz_id: Mapped[UUID] = mapped_column(ForeignKey("quizzes.id"))
-    attempt_id: Mapped[UUID] = mapped_column(ForeignKey("quiz_attempts.id"), unique=True)
+    quiz_id: Mapped[int] = mapped_column(ForeignKey("quizzes.id"))
+    attempt_id: Mapped[int] = mapped_column(ForeignKey("quiz_attempts.id"), unique=True)
     points_awarded: Mapped[int] = mapped_column(default=50, server_default="50")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

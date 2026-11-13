@@ -1,8 +1,10 @@
 # Backend DANANGACY
 
+Deploy thử lên Cloud Run (chưa cần database): xem [hướng dẫn Cloud Run](CLOUD_RUN.md).
+
 Backend demo **FastAPI + SQLAlchemy + PostgreSQL**, quản lý lịch trình và các điểm dừng. Migration dùng **Alembic**.
 
-Schema hiện tại ở revision **0002**, gồm 15 bảng nghiệp vụ theo [thiết kế database đã thống nhất](../docs/DATABASE_SCHEMA.md). Các API đang triển khai tập trung vào lịch trình.
+Schema mới nhất ở revision **0003**, gồm 15 bảng nghiệp vụ theo [thiết kế database đã thống nhất](../docs/DATABASE_SCHEMA.md), dùng khóa chính số nguyên thay cho UUID. Database chỉ thay đổi sau khi bạn chạy migration. Các API đang triển khai tập trung vào lịch trình.
 
 ## Chạy nhanh trên Windows
 

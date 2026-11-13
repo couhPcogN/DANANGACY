@@ -2,7 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.itinerary_rules import DEMO_USER_UID
-from app.db.demo_data import DEMO_DESTINATIONS, destination_uuid
+from app.db.demo_data import DEMO_DESTINATIONS
 from app.db.session import SessionLocal
 from app.models import Destination, User
 
@@ -13,11 +13,7 @@ def seed_demo_data(session: Session) -> None:
     existing = set(session.scalars(select(Destination.slug)))
     for slug, name, environment in DEMO_DESTINATIONS:
         if slug not in existing:
-            session.add(
-                Destination(
-                    id=destination_uuid(slug), slug=slug, name=name, environment=environment
-                )
-            )
+            session.add(Destination(slug=slug, name=name, environment=environment))
 
 
 if __name__ == "__main__":

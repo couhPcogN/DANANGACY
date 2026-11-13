@@ -23,7 +23,15 @@ def test_api_and_schemas_use_itinerary_names() -> None:
 
 def test_migration_matches_models_and_can_round_trip(db_engine: Engine) -> None:
     with db_engine.connect() as connection:
-        context = MigrationContext.configure(connection, opts={"compare_type": True})
+        context = MigrationContext.configure(
+            connection,
+            opts={
+                "compare_type": True,
+                "include_object": lambda obj, name, type_, reflected, compare_to: (
+                    not (type_ == "table" and name == "_uuid_integer_map")
+                ),
+            },
+        )
         assert compare_metadata(context, Base.metadata) == []
     migrate(db_engine, "base", downgrade=True)
     assert "itineraries" not in inspect(db_engine).get_table_names()

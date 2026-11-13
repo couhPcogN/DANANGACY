@@ -1,5 +1,5 @@
 from datetime import datetime
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 from sqlalchemy import (
     CheckConstraint,
@@ -14,7 +14,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
-from app.models.common import JSON_DOCUMENT, Timestamps, UUIDPrimaryKey
+from app.models.common import JSON_DOCUMENT, IntegerPrimaryKey, Timestamps
 
 
 class Wallet(Base):
@@ -28,7 +28,7 @@ class Wallet(Base):
     )
 
 
-class PointTransaction(UUIDPrimaryKey, Base):
+class PointTransaction(IntegerPrimaryKey, Base):
     __tablename__ = "point_transactions"
     __table_args__ = (
         CheckConstraint("delta_points <> 0", name="delta_nonzero"),
@@ -39,12 +39,12 @@ class PointTransaction(UUIDPrimaryKey, Base):
     user_uid: Mapped[str] = mapped_column(String(128), ForeignKey("wallets.user_uid"))
     delta_points: Mapped[int]
     reason: Mapped[str] = mapped_column(String(40))
-    source_id: Mapped[UUID | None]
+    source_id: Mapped[int | None]
     balance_after: Mapped[int]
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
-class VoucherOffer(UUIDPrimaryKey, Timestamps, Base):
+class VoucherOffer(IntegerPrimaryKey, Timestamps, Base):
     __tablename__ = "voucher_offers"
     __table_args__ = (
         CheckConstraint("points_cost > 0", name="cost_positive"),
@@ -65,7 +65,7 @@ class VoucherOffer(UUIDPrimaryKey, Timestamps, Base):
     status: Mapped[str] = mapped_column(String(20), default="DRAFT", server_default="DRAFT")
 
 
-class VoucherClaim(UUIDPrimaryKey, Base):
+class VoucherClaim(IntegerPrimaryKey, Base):
     __tablename__ = "voucher_claims"
     __table_args__ = (
         UniqueConstraint("owner_uid", "offer_id"),
@@ -78,7 +78,7 @@ class VoucherClaim(UUIDPrimaryKey, Base):
     )
 
     owner_uid: Mapped[str] = mapped_column(String(128), ForeignKey("users.uid"))
-    offer_id: Mapped[UUID] = mapped_column(ForeignKey("voucher_offers.id"))
+    offer_id: Mapped[int] = mapped_column(ForeignKey("voucher_offers.id"))
     points_spent: Mapped[int]
     offer_snapshot: Mapped[dict] = mapped_column(JSON_DOCUMENT)
     voucher_code: Mapped[str] = mapped_column(
