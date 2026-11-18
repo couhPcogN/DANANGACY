@@ -23,12 +23,15 @@ export function validateStops(stops: Stop[], duration = 1): string | null {
       return 'Giờ bắt đầu phải sớm hơn giờ kết thúc và đúng định dạng HH:mm.';
     if (end - start < 30) return 'Mỗi điểm dừng phải có thời lượng ít nhất 30 phút.';
     if (start < 360 || end > 1320) return 'Khung giờ nằm ngoài giờ tham quan gợi ý 06:00–22:00.';
-    if (stops.some((other, j) =>
-      j !== i &&
-      (other.dayIndex ?? 1) === dayIndex &&
-      timeValue(other.start) < end &&
-      timeValue(other.end) > start
-    ))
+    if (
+      stops.some(
+        (other, j) =>
+          j !== i &&
+          (other.dayIndex ?? 1) === dayIndex &&
+          timeValue(other.start) < end &&
+          timeValue(other.end) > start,
+      )
+    )
       return 'Khung giờ này trùng với một điểm đến khác.';
   }
   return null;
@@ -41,9 +44,7 @@ export function validateItineraryStops(
 ): string | null {
   const targetDuration = nextDuration ?? duration;
   if (targetDuration < duration) {
-    const removedDayStops = stops.some(
-      (stop) => (stop.dayIndex ?? 1) > targetDuration,
-    );
+    const removedDayStops = stops.some((stop) => (stop.dayIndex ?? 1) > targetDuration);
     if (removedDayStops)
       return 'Có điểm tham quan thuộc ngày bị loại bỏ. Hãy chuyển hoặc xóa các điểm trước khi giảm số ngày.';
   }

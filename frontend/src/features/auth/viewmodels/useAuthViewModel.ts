@@ -3,32 +3,76 @@ import { useNavigationViewModel } from '../../../app/navigation/NavigationProvid
 import { notify } from '../../../shared/utils/notify';
 import { useAuthModel } from '../providers/AuthProvider';
 import { useProfileModel } from '../../profile/providers/ProfileProvider';
+import { authService } from '../../../services/api/authService';
 
 export function useAuthViewModel() {
-  const { route, navigate, back, tab } = useNavigationViewModel();
+  const { route, navigate, back, tab, canGoBack } = useNavigationViewModel();
+  const handleBack = () => {
+    if (canGoBack()) {
+      back();
+    } else {
+      tab('home');
+    }
+  };
   const auth = useAuthModel();
   const profile = useProfileModel();
-  const login = () => {
-    auth.login();
-    tab('home');
-  };
-  const [fullName, setFullName] = useState(profile.name);
-  const [email, setEmail] = useState(profile.email);
-  const [password, setPassword] = useState('12345678');
-  const [confirm, setConfirm] = useState('12345678');
+
+  const [fullName, setFullName] = useState(profile.name || 'Người dùng Đà Nẵng');
+  const [email, setEmail] = useState(
+    profile.email?.includes('@') ? profile.email : 'han_danang@danangacy.vn',
+  );
+  const [password, setPassword] = useState('SecurePassword123');
+  const [confirm, setConfirm] = useState('SecurePassword123');
   const [code, setCode] = useState('123456');
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const submitLogin = () =>
-    email.includes('@') && password.length >= 8
-      ? login()
-      : notify('Vui lòng nhập email hợp lệ và mật khẩu ít nhất 8 ký tự.');
-  const submitRegistration = () => {
-    if (!fullName.trim() || !email.includes('@') || password.length < 8 || password !== confirm)
-      return notify('Kiểm tra họ tên, email và hai mật khẩu trước khi đăng ký.');
-    profile.updateProfile({ name: fullName.trim(), email: email.trim() });
-    login();
+  const submitLogin = async () => {
+    if (!email.includes('@') || password.length < 8) {
+      notify('Vui lòng nhập email hợp lệ và mật khẩu ít nhất 8 ký tự.');
+      return;
+    }
+    setLoading(true);
+    try {
+      const result = await authService.login(email.trim(), password);
+      auth.setAuthenticated(result.access_token, result.user);
+      profile.updateProfile({
+        name: result.user.display_name,
+        email: result.user.email,
+      });
+      notify(`Đăng nhập thành công! Chào mừng ${result.user.display_name}`);
+      tab('home');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Đăng nhập không thành công';
+      notify(msg);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const submitRegistration = async () => {
+    if (!fullName.trim() || !email.includes('@') || password.length < 8 || password !== confirm) {
+      notify('Kiểm tra họ tên, email và hai mật khẩu trước khi đăng ký.');
+      return;
+    }
+    setLoading(true);
+    try {
+      const result = await authService.register(email.trim(), password, fullName.trim());
+      auth.setAuthenticated(result.access_token, result.user);
+      profile.updateProfile({
+        name: result.user.display_name,
+        email: result.user.email,
+      });
+      notify(`Đăng ký thành công! Chào mừng ${result.user.display_name}`);
+      tab('home');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Đăng ký không thành công';
+      notify(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const requestResetCode = () =>
     email.includes('@') ? navigate('verify') : notify('Vui lòng nhập email hợp lệ.');
   const verifyCode = () =>
@@ -40,7 +84,7 @@ export function useAuthViewModel() {
 
   return {
     tab,
-
+    loading,
     submitLogin,
     submitRegistration,
     requestResetCode,
@@ -48,7 +92,7 @@ export function useAuthViewModel() {
     submitPasswordReset,
     route,
     navigate,
-    back,
+    back: handleBack,
     notify,
     fullName,
     setFullName,

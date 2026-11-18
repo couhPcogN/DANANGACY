@@ -36,6 +36,7 @@ export function ExploreScreen() {
     categoryFilter,
     setCategoryFilter,
     categories,
+    aiGuide,
   } = useExploreViewModel();
 
   if (route.name === 'explore')
@@ -233,6 +234,19 @@ export function ExploreScreen() {
         <Label color={colors.muted} style={{ marginBottom: 14 }}>
           {place.description}
         </Label>
+      ) : null}
+      {aiGuide ? (
+        <Card style={{ backgroundColor: '#F0F9FF', borderColor: '#BAE6FD', borderWidth: 1 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+            <Ionicons name="sparkles" size={16} color="#0284C7" />
+            <Label weight="bold" size={15} color="#0369A1">
+              Gemini 3.8 Flash · Thuyết minh di sản
+            </Label>
+          </View>
+          <Label color="#0C4A6E" style={{ lineHeight: 20 }}>
+            {aiGuide}
+          </Label>
+        </Card>
       ) : null}
       <Card>
         <Label weight="bold" size={16}>

@@ -16,7 +16,7 @@ import type { SavedAppState } from '../../services/storage/appStateRepository';
 import { NavigationProvider } from '../navigation/NavigationProvider';
 
 function PersistLocalState({ children }: { children: ReactNode }) {
-  const { signedIn } = useAuthModel();
+  const { signedIn, token, user } = useAuthModel();
   const { name, email, phone } = useProfileModel();
   const { favorites } = useFavoritesModel();
   const { itineraries } = useItineraryModel();
@@ -27,6 +27,8 @@ function PersistLocalState({ children }: { children: ReactNode }) {
       appStateRepository
         .save({
           signedIn,
+          token,
+          user,
           name,
           email,
           phone,
@@ -42,6 +44,8 @@ function PersistLocalState({ children }: { children: ReactNode }) {
     return () => clearTimeout(timer);
   }, [
     signedIn,
+    token,
+    user,
     name,
     email,
     phone,
@@ -75,10 +79,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
   if (!initial) return null;
 
+  const isActuallySignedIn = Boolean(initial.signedIn === true && initial.token);
+  const authInitialState = {
+    signedIn: isActuallySignedIn,
+    token: isActuallySignedIn ? (initial.token ?? null) : null,
+    user: isActuallySignedIn ? (initial.user ?? null) : null,
+  };
+  const profileInitialState = {
+    ...initial,
+    name: isActuallySignedIn && initial.name ? initial.name : 'Khách tham quan',
+    email: isActuallySignedIn && initial.email ? initial.email : '',
+  };
+
   return (
-    <NavigationProvider initialState={{ name: initial.signedIn === true ? 'home' : 'welcome' }}>
-      <AuthProvider initialState={initial.signedIn}>
-        <ProfileProvider initialState={initial}>
+    <NavigationProvider initialState={{ name: 'home' }}>
+      <AuthProvider initialState={authInitialState}>
+        <ProfileProvider initialState={profileInitialState}>
           <FavoritesProvider initialState={initial.favorites}>
             <ItineraryProvider initialState={initial.itineraries}>
               <GameProvider initialState={initial}>

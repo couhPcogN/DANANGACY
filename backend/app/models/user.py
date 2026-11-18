@@ -11,7 +11,9 @@ class User(Timestamps, Base):
 
     uid: Mapped[str] = mapped_column(String(128), primary_key=True)
     display_name: Mapped[str] = mapped_column(String(100))
-    email: Mapped[str | None] = mapped_column(String(320))
+    # Stored lower-case by the auth service; NULL is allowed for profiles without login.
+    email: Mapped[str | None] = mapped_column(String(320), index=True, unique=True)
+    password_hash: Mapped[str | None] = mapped_column(String(255))
     phone: Mapped[str | None] = mapped_column(String(30))
     avatar_url: Mapped[str | None] = mapped_column(Text)
     interest_tags: Mapped[list] = mapped_column(JSON_DOCUMENT, default=list, server_default="[]")

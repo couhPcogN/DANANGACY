@@ -19,6 +19,7 @@ import { useAuthViewModel } from '../viewmodels/useAuthViewModel';
 export function AuthScreen() {
   const {
     tab,
+    loading,
     submitLogin,
     submitRegistration,
     requestResetCode,
@@ -125,7 +126,7 @@ export function AuthScreen() {
             Quên mật khẩu?
           </Label>
         </Pressable>
-        <Button title="Đăng nhập" onPress={submitLogin} />
+        <Button title={loading ? 'Đang đăng nhập...' : 'Đăng nhập'} onPress={submitLogin} />
         <Divider />
         <GoogleButton
           title="Đăng nhập bằng Google"
@@ -135,7 +136,10 @@ export function AuthScreen() {
           Bạn chưa có tài khoản?
         </Label>
         <Button title="Đăng ký tài khoản" kind="secondary" onPress={() => navigate('register')} />
-        <InfoBanner>Bạn vẫn có thể khám phá địa điểm mà không cần đăng nhập.</InfoBanner>
+        <InfoBanner>
+          Gợi ý: Bạn có thể bấm Đăng nhập ngay với tài khoản mẫu (han_danang@danangacy.vn /
+          SecurePassword123) hoặc bấm Đăng ký tài khoản mới bên trên.
+        </InfoBanner>
       </Screen>
     );
 
@@ -190,7 +194,10 @@ export function AuthScreen() {
         <InfoBanner>
           Sử dụng ít nhất 8 ký tự, gồm chữ và số. Không chia sẻ mật khẩu của bạn.
         </InfoBanner>
-        <Button title="Đăng ký" onPress={submitRegistration} />
+        <Button
+          title={loading ? 'Đang tạo tài khoản...' : 'Đăng ký'}
+          onPress={submitRegistration}
+        />
         <Divider />
         <GoogleButton
           title="Đăng ký bằng Google"

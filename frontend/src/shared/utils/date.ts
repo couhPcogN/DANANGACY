@@ -42,12 +42,9 @@ export function isValidVietnamDate(value: string): boolean {
 export function addVietnamDays(value: string, days: number): string {
   const date = parseVietnamDate(value);
   if (!date) return value;
-  const next = new Date(Date.UTC(
-    date.getUTCFullYear(),
-    date.getUTCMonth(),
-    date.getUTCDate() + days,
-    12,
-  ));
+  const next = new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + days, 12),
+  );
   return new Intl.DateTimeFormat('vi-VN', {
     timeZone: VIETNAM_TIME_ZONE,
     day: '2-digit',

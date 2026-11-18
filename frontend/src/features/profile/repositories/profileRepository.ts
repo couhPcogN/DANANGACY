@@ -4,8 +4,8 @@ export type Profile = { name: string; email: string; phone: string };
 
 export function createProfileRepository(initial?: Partial<Profile>) {
   const store = createStore<Profile>({
-    name: typeof initial?.name === 'string' ? initial.name : 'Nguyễn Hân',
-    email: typeof initial?.email === 'string' ? initial.email : 'han.nguyen@email.com',
+    name: typeof initial?.name === 'string' && initial.name ? initial.name : 'Khách tham quan',
+    email: typeof initial?.email === 'string' ? initial.email : '',
     phone: typeof initial?.phone === 'string' ? initial.phone : '',
   });
   return {

@@ -1,8 +1,11 @@
+import type { AuthUser } from '../../features/auth/types';
 import type { Itinerary } from '../../features/itinerary/types';
 import { localStorage } from './localStorage';
 
 export type SavedAppState = {
   signedIn: boolean;
+  token?: string | null;
+  user?: AuthUser | null;
   name: string;
   email: string;
   phone: string;
@@ -31,9 +34,7 @@ export const appStateRepository = {
       duration: itinerary.duration >= 1 && itinerary.duration <= 3 ? itinerary.duration : 1,
       stops: itinerary.stops.map((stop) => ({
         ...stop,
-        dayIndex: stop.dayIndex && stop.dayIndex >= 1 && stop.dayIndex <= 3
-          ? stop.dayIndex
-          : 1,
+        dayIndex: stop.dayIndex && stop.dayIndex >= 1 && stop.dayIndex <= 3 ? stop.dayIndex : 1,
       })),
     }));
     return {

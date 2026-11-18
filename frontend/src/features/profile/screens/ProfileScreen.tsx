@@ -20,6 +20,8 @@ export function ProfileScreen() {
     tab,
     signedIn,
     logout,
+    goToLogin,
+    goToRegister,
     rewardRedeemed,
     quizCompleted,
     favoriteItems,
@@ -58,33 +60,59 @@ export function ProfileScreen() {
                 justifyContent: 'center',
               }}
             >
-              <Label size={25} weight="bold" color={colors.primaryDark}>
-                {name.split(' ').at(-1)?.[0] ?? name[0]}
-              </Label>
+              {signedIn ? (
+                <Label size={25} weight="bold" color={colors.primaryDark}>
+                  {name.split(' ').at(-1)?.[0] ?? name[0]}
+                </Label>
+              ) : (
+                <Ionicons name="person-outline" size={32} color={colors.primaryDark} />
+              )}
             </View>
-            <View>
+            <View style={{ flex: 1 }}>
               <Label size={20} weight="bold">
-                {name}
+                {signedIn ? name : 'Khách tham quan'}
               </Label>
               <Label size={12} color={colors.muted}>
-                {email}
+                {signedIn ? email : 'Chưa đăng nhập tài khoản'}
               </Label>
             </View>
           </View>
-          <Button
-            title="Chỉnh sửa hồ sơ"
-            kind="secondary"
-            onPress={() => navigate('editProfile')}
-            style={{ marginTop: 7 }}
-          />
+          {signedIn ? (
+            <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
+              <Button
+                title="Chỉnh sửa hồ sơ"
+                kind="secondary"
+                onPress={() => navigate('editProfile')}
+                style={{ flex: 1 }}
+              />
+              <Button title="Đăng xuất" kind="outline" onPress={logout} style={{ flex: 1 }} />
+            </View>
+          ) : (
+            <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
+              <Button title="Đăng nhập" onPress={goToLogin} style={{ flex: 1, minHeight: 40 }} />
+              <Button
+                title="Đăng ký tài khoản"
+                kind="secondary"
+                onPress={goToRegister}
+                style={{ flex: 1, minHeight: 40 }}
+              />
+            </View>
+          )}
         </Card>
-        <InfoBanner icon="extension-puzzle-outline">
-          <Label weight="bold">{points} điểm di sản</Label>
-          {'\n'}
-          {points === 70
-            ? 'Sau khi đổi ưu đãi Cà phê bên sông Hàn'
-            : 'Tích lũy từ thử thách di sản'}
-        </InfoBanner>
+        {signedIn ? (
+          <InfoBanner icon="extension-puzzle-outline">
+            <Label weight="bold">{points} điểm di sản</Label>
+            {'\n'}
+            {points === 70
+              ? 'Sau khi đổi ưu đãi Cà phê bên sông Hàn'
+              : 'Tích lũy từ thử thách di sản'}
+          </InfoBanner>
+        ) : (
+          <InfoBanner icon="information-circle-outline">
+            Đăng nhập hoặc đăng ký tài khoản để lưu lịch trình cá nhân, tích lũy điểm di sản và đổi
+            voucher ưu đãi trên mọi thiết bị.
+          </InfoBanner>
+        )}
         <SectionTitle title="Hành trình của bạn" />
         <Card>
           {(

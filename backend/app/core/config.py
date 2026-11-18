@@ -20,6 +20,11 @@ class Settings(BaseSettings):
     db_user: str = "postgres"
     db_password: SecretStr = SecretStr("")
     cors_origins: list[str] = ["http://localhost:8081", "http://127.0.0.1:8081"]
+    gemini_api_key: SecretStr = SecretStr("")
+    # Empty means a random per-process secret: tokens become invalid after every restart.
+    jwt_secret_key: SecretStr = SecretStr("")
+    access_token_expire_minutes: int = Field(default=60 * 24 * 7, ge=5, le=60 * 24 * 30)
+    open_meteo_url: str = "https://api.open-meteo.com/v1/forecast"
 
     @property
     def database_url(self) -> URL:
