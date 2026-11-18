@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, TextInput, View } from 'react-native';
-import { colors, radius } from '../../theme';
+import { colors, radius } from '../../../theme';
 
 import { Label } from './Label';
 import type { IconName } from './types';
@@ -14,6 +14,16 @@ type FieldProps = {
   keyboardType?: 'default' | 'email-address' | 'numeric' | 'phone-pad';
   icon?: IconName;
   multiline?: boolean;
+  autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
+  autoCorrect?: boolean;
+  returnKeyType?: 'done' | 'next' | 'search' | 'go';
+  textContentType?:
+    | 'none'
+    | 'emailAddress'
+    | 'password'
+    | 'newPassword'
+    | 'telephoneNumber'
+    | 'name';
 };
 
 export function Field({
@@ -25,7 +35,15 @@ export function Field({
   keyboardType = 'default',
   icon,
   multiline = false,
+  autoCapitalize,
+  autoCorrect,
+  returnKeyType = 'done',
+  textContentType,
 }: FieldProps) {
+  const normalizedAutoCapitalize =
+    autoCapitalize ??
+    (keyboardType === 'email-address' || keyboardType === 'numeric' ? 'none' : 'sentences');
+  const normalizedAutoCorrect = autoCorrect ?? keyboardType === 'default';
   return (
     <View style={{ marginBottom: 14 }}>
       {label ? (
@@ -42,6 +60,10 @@ export function Field({
           placeholderTextColor={colors.muted}
           secureTextEntry={secureTextEntry}
           keyboardType={keyboardType}
+          autoCapitalize={normalizedAutoCapitalize}
+          autoCorrect={normalizedAutoCorrect}
+          returnKeyType={returnKeyType}
+          textContentType={textContentType}
           multiline={multiline}
           style={[styles.input, multiline && { height: 76, textAlignVertical: 'top' }]}
         />

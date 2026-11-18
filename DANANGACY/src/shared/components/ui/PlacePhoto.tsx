@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image, ImageSourcePropType, ImageStyle, StyleProp, StyleSheet, View } from 'react-native';
-import { colors, radius } from '../../theme';
+import { colors, radius } from '../../../theme';
 
 import { Label } from './Label';
 

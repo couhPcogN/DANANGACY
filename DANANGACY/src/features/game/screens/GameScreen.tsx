@@ -13,7 +13,7 @@ import {
   Screen,
   SectionTitle,
   Tabs,
-} from '../../../components';
+} from '../../../shared/components';
 import { images } from '../../../config/images';
 import { colors } from '../../../theme';
 import { RewardsContent } from '../components/RewardsContent';
@@ -40,6 +40,7 @@ export function GameScreen() {
     points,
     selectAnswer,
     rewardRedeemed,
+    completionAwarded,
     notify,
     visibleGameTab,
     voucherFilter,
@@ -291,13 +292,17 @@ export function GameScreen() {
           </Label>
           <Label>câu trả lời chính xác</Label>
           <Label color={colors.primaryDark} weight="bold" style={{ marginTop: 10 }}>
-            +50 điểm di sản
+            {completionAwarded > 0
+              ? `+${completionAwarded} điểm di sản · Lần hoàn thành hiện tại`
+              : 'Đã nhận thưởng · Không cộng điểm lần xem lại'}
           </Label>
         </Card>
         <Card>
           <Label weight="bold">Điểm hiện có: {points}</Label>
           <Label size={12} color={colors.muted}>
-            Đã nhận 50 điểm cho lần hoàn thành đầu tiên.
+            {completionAwarded > 0
+              ? 'Đã cộng 50 điểm cho lần hoàn thành hợp lệ đầu tiên.'
+              : 'Đã nhận thưởng; không cộng điểm khi xem lại kết quả.'}
           </Label>
           <Label size={12} color={colors.muted} style={{ marginTop: 9 }}>
             Điểm hoàn thành chỉ được cộng một lần.

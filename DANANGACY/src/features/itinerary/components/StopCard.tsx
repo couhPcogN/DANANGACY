@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { View } from 'react-native';
-import { Card, Label } from '../../../components';
+import { Card, Label } from '../../../shared/components';
 import { colors } from '../../../theme';
 import type { StopView } from '../types';
 

@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useNavigationViewModel } from '../../../navigation/NavigationProvider';
-import { notify } from '../../../utils/notify';
+import { useNavigationViewModel } from '../../../app/navigation/NavigationProvider';
+import { notify } from '../../../shared/utils/notify';
 import { useItineraryModel } from '../providers/ItineraryProvider';
 import { useItineraryActions } from './useItineraryActions';
 import { useFavoritesModel } from '../../explore/providers/FavoritesProvider';
@@ -8,10 +8,12 @@ import { placeRepository } from '../../explore/repositories/placeRepository';
 import { getStopName } from '../utils/getStopName';
 import { validateStops } from '../schemas';
 import type { Stop, Itinerary } from '../types';
+import { isValidVietnamDate } from '../../../shared/utils/date';
 
 export function useItineraryViewModel() {
   const { route, back, navigate, tab } = useNavigationViewModel();
-  const { itineraries, draft, setDraft } = useItineraryModel();
+  const { itineraries, draft, setDraft, selectedPreferences, togglePreference } =
+    useItineraryModel();
   const { favorites } = useFavoritesModel();
   const { startCreate, saveDraft, startEdit, saveEdit, cancelEdit, replaceSonTra } =
     useItineraryActions();
@@ -22,7 +24,10 @@ export function useItineraryViewModel() {
   const [startTime, setStartTime] = useState('14:00');
   const [endTime, setEndTime] = useState('16:00');
 
-  const selectedItinerary = itineraries.find((t) => t.id === route.id) ?? itineraries[0];
+  const selectedItinerary =
+    (route.id ? itineraries.find((t) => t.id === route.id) : itineraries[0]) ?? itineraries[0];
+  const selectedItineraryFound =
+    route.id === undefined || itineraries.some((itinerary) => itinerary.id === route.id);
   const setItinerary = (patch: Partial<Itinerary>) => setDraft({ ...draft, ...patch });
   const timeError = editingTime
     ? validateStops(
@@ -62,7 +67,7 @@ export function useItineraryViewModel() {
   };
 
   const continueFromInfo = () => {
-    if (!draft.title.trim() || !/^\d{2}\/\d{2}\/\d{4}$/.test(draft.date))
+    if (!draft.title.trim() || !isValidVietnamDate(draft.date))
       return notify('Vui lòng nhập tên lịch trình và ngày theo DD/MM/YYYY.');
     navigate('itineraryPreferences');
   };
@@ -74,7 +79,7 @@ export function useItineraryViewModel() {
   const submitEdit = () => {
     const error = validateStops(draft.stops);
     if (error) return notify(error);
-    if (!/^\d{2}\/\d{2}\/\d{4}$/.test(draft.date))
+    if (!isValidVietnamDate(draft.date))
       return notify('Ngày không hợp lệ. Dùng định dạng DD/MM/YYYY.');
     saveEdit();
   };
@@ -162,9 +167,12 @@ export function useItineraryViewModel() {
     setSearch,
     editingTime,
     selectedItinerary,
+    selectedItineraryFound,
     setItinerary,
     beginTimeEdit,
     beginSavedTimeEdit,
     timeEditor,
+    selectedPreferences,
+    togglePreference,
   };
 }

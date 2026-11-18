@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
+import type { ImageSourcePropType } from 'react-native';
 import { StyleSheet, View } from 'react-native';
-import type { Place } from '../../features/explore/types';
-import { colors } from '../../theme';
+import { colors } from '../../../theme';
 
 import { Card } from './Card';
 import { Label } from './Label';
@@ -9,9 +9,18 @@ import { Pill } from './Pill';
 import { PlacePhoto } from './PlacePhoto';
 import type { IconName } from './types';
 
+type PlaceRowData = {
+  name: string;
+  area: string;
+  space: 'INDOOR' | 'OUTDOOR';
+  category: 'Thiên nhiên' | 'Văn hóa' | 'Kiến trúc' | 'Lịch sử';
+  characteristics: string[];
+  image?: ImageSourcePropType;
+};
+
 type PlaceRowProps = {
-  place: Place;
-  onPress: () => void;
+  place: PlaceRowData;
+  onPress?: () => void;
   selected?: boolean;
   trailing?: IconName;
   small?: boolean;
@@ -25,7 +34,11 @@ export function PlaceRow({
   small = false,
 }: PlaceRowProps) {
   return (
-    <Card onPress={onPress} style={[styles.placeRow, selected && { borderColor: colors.primary }]}>
+    <Card
+      onPress={onPress}
+      accessibilityLabel={`Mở ${place.name}${selected ? ', đã chọn' : ''}`}
+      style={[styles.placeRow, selected && { borderColor: colors.primary }]}
+    >
       <View style={{ width: small ? 68 : 100, height: small ? 68 : 100, marginRight: 12 }}>
         <PlacePhoto source={place.image} name={place.name} height={small ? 68 : 100} />
       </View>
@@ -39,7 +52,10 @@ export function PlaceRow({
           </Label>
         ) : null}
         <View style={{ alignSelf: 'flex-start', marginTop: 6 }}>
-          <Pill title={place.category} tone={place.category === 'Trong nhà' ? 'green' : 'blue'} />
+          <Pill
+            title={place.space === 'INDOOR' ? 'Trong nhà' : 'Ngoài trời'}
+            tone={place.space === 'INDOOR' ? 'green' : 'blue'}
+          />
         </View>
       </View>
       <Ionicons name={trailing} size={19} color={colors.primaryDark} />

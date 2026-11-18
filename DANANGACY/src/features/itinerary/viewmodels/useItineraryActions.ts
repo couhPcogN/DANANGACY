@@ -1,4 +1,4 @@
-import { useNavigationViewModel } from '../../../navigation/NavigationProvider';
+import { useNavigationViewModel } from '../../../app/navigation/NavigationProvider';
 import { useItineraryModel } from '../providers/ItineraryProvider';
 
 export function useItineraryActions() {

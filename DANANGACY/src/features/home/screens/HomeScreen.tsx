@@ -1,12 +1,30 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image, Pressable, ScrollView, View } from 'react-native';
-import { Button, Card, Label, PlacePhoto, Screen, SectionTitle, Tabs } from '../../../components';
+import {
+  Button,
+  Card,
+  Label,
+  PlacePhoto,
+  Screen,
+  SectionTitle,
+  Tabs,
+} from '../../../shared/components';
 import { images } from '../../../config/images';
 import { colors } from '../../../theme';
 import { useHomeViewModel } from '../viewmodels/useHomeViewModel';
+import { formatVietnamDate } from '../../../shared/utils/date';
 
 export function HomeScreen() {
-  const { navigate, tab, name, itineraries, startCreate, recommendedPlaces } = useHomeViewModel();
+  const {
+    navigate,
+    tab,
+    name,
+    itineraries,
+    startCreate,
+    recommendedPlaces,
+    quizCompleted,
+    displayQuestion,
+  } = useHomeViewModel();
 
   return (
     <Screen bottom={<Tabs active="home" />} tabs>
@@ -79,6 +97,11 @@ export function HomeScreen() {
             {itineraries.length} lịch
           </Label>
         </View>
+        {itineraries.length === 0 ? (
+          <Label size={12} color={colors.muted} style={{ marginTop: 10 }}>
+            Chưa có lịch trình sắp tới.
+          </Label>
+        ) : null}
         {itineraries.map((itinerary, index) => (
           <Pressable
             key={itinerary.id}
@@ -96,8 +119,8 @@ export function HomeScreen() {
             <View>
               <Label weight="bold">{itinerary.title}</Label>
               <Label size={12} color={colors.muted}>
-                {itinerary.date} · {itinerary.duration} ngày · {itinerary.stops.length} điểm đến ·{' '}
-                {itinerary.pace}
+                {formatVietnamDate(itinerary.date)} · {itinerary.duration} ngày ·{' '}
+                {itinerary.stops.length} điểm đến · {itinerary.pace}
               </Label>
             </View>
             <Ionicons name="arrow-forward-circle" size={26} color={colors.primaryDark} />
@@ -142,7 +165,9 @@ export function HomeScreen() {
           <View>
             <Label weight="bold">Hiện vật Chăm Pa</Label>
             <Label size={12} color={colors.primaryDark}>
-              Tiếp tục · Câu 2/5 · +50 điểm
+              {quizCompleted
+                ? `Đã hoàn thành · Câu ${displayQuestion}/5 · Đã nhận 50 điểm`
+                : `Tiếp tục · Câu ${displayQuestion}/5 · +50 điểm`}
             </Label>
           </View>
         </View>

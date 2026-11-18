@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useSyncExternalStore } from 'react';
 import type { ReactNode } from 'react';
-import type { Repository } from '../lib/state/createStore';
+import type { Repository } from './createStore';
 
 export function createModelContext<State extends object, Actions extends object, Initial>(
   name: string,

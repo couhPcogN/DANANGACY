@@ -1,4 +1,4 @@
-import { createStore } from '../../../lib/state/createStore';
+import { createStore } from '../../../shared/state/createStore';
 import { gameRepository } from './gameRepository';
 
 export type GameProgress = {
@@ -10,17 +10,22 @@ export type GameProgress = {
 
 export function createGameStateRepository(initial?: Partial<GameProgress>) {
   const quiz = gameRepository.getQuestions();
+  const initialAnswers =
+    Array.isArray(initial?.quizAnswers) && initial.quizAnswers.length === quiz.length
+      ? initial.quizAnswers
+      : [quiz[0].correct, ...Array<number | null>(quiz.length - 1).fill(null)];
+  const nextUnanswered = initialAnswers.findIndex((answer) => answer === null);
+  const initialQuizIndex =
+    initial?.quizCompleted === true ? 0 : nextUnanswered < 0 ? 0 : nextUnanswered;
   const store = createStore({
-    quizIndex: 0,
+    quizIndex: initialQuizIndex,
     quizSelected: null as number | null,
     quizConfirmed: false,
-    quizAnswers:
-      Array.isArray(initial?.quizAnswers) && initial.quizAnswers.length === quiz.length
-        ? initial.quizAnswers
-        : [quiz[0].correct, ...Array<number | null>(quiz.length - 1).fill(null)],
+    quizAnswers: initialAnswers,
     quizCompleted: initial?.quizCompleted === true,
     points: typeof initial?.points === 'number' ? initial.points : 120,
     rewardRedeemed: initial?.rewardRedeemed === true,
+    completionAwarded: 0,
   });
   return {
     getSnapshot: store.getSnapshot,
@@ -69,8 +74,14 @@ export function createGameStateRepository(initial?: Partial<GameProgress>) {
             ...current,
             points: current.points + 50,
             quizCompleted: true,
+            completionAwarded: 50,
           }));
         return true;
+      },
+      acknowledgeCompletionAward() {
+        store.update((state) =>
+          state.completionAwarded === 0 ? state : { ...state, completionAwarded: 0 },
+        );
       },
       redeemReward(): boolean {
         const state = store.getSnapshot();

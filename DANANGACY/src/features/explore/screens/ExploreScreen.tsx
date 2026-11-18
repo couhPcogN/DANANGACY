@@ -12,15 +12,17 @@ import {
   Screen,
   SectionTitle,
   Tabs,
-} from '../../../components';
+} from '../../../shared/components';
 import { colors } from '../../../theme';
 import { useExploreViewModel } from '../viewmodels/useExploreViewModel';
 
 export function ExploreScreen() {
   const {
+    tab,
     mapPlaces,
     featuredPlace,
     place,
+    placeFound,
     saved,
     route,
     navigate,
@@ -31,6 +33,9 @@ export function ExploreScreen() {
     filter,
     setFilter,
     visible,
+    categoryFilter,
+    setCategoryFilter,
+    categories,
   } = useExploreViewModel();
 
   if (route.name === 'explore')
@@ -55,15 +60,26 @@ export function ExploreScreen() {
           contentContainerStyle={{ gap: 8, paddingVertical: 2 }}
           style={{ flexGrow: 0, marginBottom: 10 }}
         >
-          {['Tất cả', 'Trong nhà', 'Ngoài trời', 'Bảo tàng'].map((x) => (
+          {['Tất cả', 'Trong nhà', 'Ngoài trời'].map((x) => (
             <Pill key={x} title={x} selected={filter === x} onPress={() => setFilter(x)} />
           ))}
         </ScrollView>
-        <SectionTitle
-          title="Điểm đến nổi bật"
-          action={`${visible.length} địa điểm`}
-          onAction={() => {}}
-        />
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ gap: 8, paddingVertical: 2 }}
+          style={{ flexGrow: 0, marginBottom: 10 }}
+        >
+          {['Tất cả', ...categories].map((category) => (
+            <Pill
+              key={category}
+              title={category}
+              selected={categoryFilter === category}
+              onPress={() => setCategoryFilter(category)}
+            />
+          ))}
+        </ScrollView>
+        <SectionTitle title="Điểm đến nổi bật" action={`${visible.length} địa điểm`} />
         {visible.length ? (
           visible.map((place) => (
             <PlaceRow key={place.id} place={place} onPress={() => navigate('place', place.id)} />
@@ -79,12 +95,31 @@ export function ExploreScreen() {
   if (route.name === 'map')
     return (
       <Screen bottom={<Tabs active="explore" />} tabs>
-        <Header title="Bản đồ" subtitle="5 điểm đến tại Đà Nẵng" onBack={back} />
+        <Header
+          title="Bản đồ"
+          subtitle={`${mapPlaces.length} điểm đến tại Đà Nẵng`}
+          onBack={back}
+        />
         <View style={{ flexDirection: 'row', gap: 7, marginBottom: 15 }}>
           {['Tất cả', 'Trong nhà', 'Ngoài trời'].map((x) => (
             <Pill key={x} title={x} selected={filter === x} onPress={() => setFilter(x)} />
           ))}
         </View>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ gap: 8, paddingVertical: 2 }}
+          style={{ flexGrow: 0, marginBottom: 10 }}
+        >
+          {['Tất cả', ...categories].map((category) => (
+            <Pill
+              key={category}
+              title={category}
+              selected={categoryFilter === category}
+              onPress={() => setCategoryFilter(category)}
+            />
+          ))}
+        </ScrollView>
         <View
           style={{
             height: 340,
@@ -126,9 +161,29 @@ export function ExploreScreen() {
         <Label size={12} color={colors.muted} style={{ marginBottom: 12 }}>
           Bản đồ sơ đồ · Vị trí mang tính minh họa
         </Label>
-        <PlaceRow place={featuredPlace} onPress={() => navigate('place', 'cham')} />
+        {featuredPlace ? (
+          <PlaceRow place={featuredPlace} onPress={() => navigate('place', featuredPlace.id)} />
+        ) : (
+          <Card>
+            <Label color={colors.muted}>Không có địa điểm phù hợp bộ lọc.</Label>
+          </Card>
+        )}
       </Screen>
     );
+
+  if (!placeFound || !place) {
+    return (
+      <Screen bottom={<Button title="Quay lại khám phá" onPress={() => tab('explore')} />}>
+        <Header title="Địa điểm không tồn tại" onBack={back} />
+        <Card>
+          <Label weight="bold">Không tìm thấy địa điểm</Label>
+          <Label size={13} color={colors.muted} style={{ marginTop: 8 }}>
+            Địa điểm trong liên kết không còn hoặc ID không hợp lệ.
+          </Label>
+        </Card>
+      </Screen>
+    );
+  }
 
   return (
     <Screen
@@ -165,8 +220,14 @@ export function ExploreScreen() {
         {place.name}
       </Label>
       <View style={{ flexDirection: 'row', gap: 8, marginBottom: 14 }}>
-        <Pill title={place.category} tone={place.category === 'Trong nhà' ? 'green' : 'blue'} />
-        <Pill title={place.tags} tone="orange" selected />
+        <Pill
+          title={place.space === 'INDOOR' ? 'Trong nhà' : 'Ngoài trời'}
+          tone={place.space === 'INDOOR' ? 'green' : 'blue'}
+        />
+        <Pill title={place.category} tone="orange" />
+        {place.characteristics.slice(0, 2).map((characteristic) => (
+          <Pill key={characteristic} title={characteristic} />
+        ))}
       </View>
       {place.id === 'cham' ? (
         <Label color={colors.muted} style={{ marginBottom: 14 }}>

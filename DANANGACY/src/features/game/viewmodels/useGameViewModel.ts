@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useNavigationViewModel } from '../../../navigation/NavigationProvider';
-import { notify } from '../../../utils/notify';
+import { useNavigationViewModel } from '../../../app/navigation/NavigationProvider';
+import { notify } from '../../../shared/utils/notify';
 import { useGameModel } from '../providers/GameProvider';
 import { gameRepository } from '../repositories/gameRepository';
 
@@ -17,6 +17,7 @@ export function useGameViewModel() {
     selectAnswer,
     confirmAnswer,
     rewardRedeemed,
+    completionAwarded,
   } = model;
   const quiz = gameRepository.getQuestions();
   const startQuiz = () => {
@@ -54,10 +55,19 @@ export function useGameViewModel() {
     else setGameTab(value);
   };
   const openChallenge = (index: number) => {
-    if (index === 0) navigate(quizCompleted ? 'quizResult' : 'gameIntro');
-    else notify('Thử thách này sẽ có trong bản tiếp theo.');
+    if (index === 0) {
+      if (quizCompleted) {
+        model.acknowledgeCompletionAward();
+        navigate('quizResult');
+      } else navigate('gameIntro');
+    } else notify('Thử thách này sẽ có trong bản tiếp theo.');
   };
-  const continueChallenge = () => (quizCompleted ? navigate('quizResult') : startQuiz());
+  const continueChallenge = () => {
+    if (quizCompleted) {
+      model.acknowledgeCompletionAward();
+      navigate('quizResult');
+    } else startQuiz();
+  };
   const submitAnswer = () => (quizConfirmed ? nextQuestion() : confirmAnswer());
 
   return {
@@ -81,6 +91,7 @@ export function useGameViewModel() {
     points,
     selectAnswer,
     rewardRedeemed,
+    completionAwarded,
     notify,
     visibleGameTab,
     voucherFilter,

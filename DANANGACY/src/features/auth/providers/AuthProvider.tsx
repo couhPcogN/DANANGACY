@@ -1,4 +1,4 @@
-import { createModelContext } from '../../../providers/createModelContext';
+import { createModelContext } from '../../../shared/state/createModelContext';
 import { createAuthRepository } from '../repositories/authRepository';
 
 const context = createModelContext('Auth', createAuthRepository);

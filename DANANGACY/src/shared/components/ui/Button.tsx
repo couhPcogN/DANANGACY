@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleProp, StyleSheet, ViewStyle } from 'react-native';
-import { colors, radius } from '../../theme';
+import { colors, radius } from '../../../theme';
 
 import { Label } from './Label';
 import type { IconName } from './types';
@@ -8,6 +8,7 @@ import type { IconName } from './types';
 type ButtonProps = {
   title: string;
   onPress: () => void;
+  accessibilityLabel?: string;
   kind?: 'primary' | 'secondary' | 'outline';
   icon?: IconName;
   disabled?: boolean;
@@ -23,6 +24,7 @@ const backgrounds = {
 export function Button({
   title,
   onPress,
+  accessibilityLabel,
   kind = 'primary',
   icon,
   disabled = false,
@@ -34,6 +36,7 @@ export function Button({
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel ?? title}
       accessibilityState={{ disabled }}
       disabled={disabled}
       hitSlop={4}

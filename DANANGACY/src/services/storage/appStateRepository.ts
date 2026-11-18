@@ -24,9 +24,21 @@ export const appStateRepository = {
     const saved = await localStorage.read<StoredAppState>(STORAGE_KEY);
     if (!saved) return null;
     const { trips: legacyItineraries, ...state } = saved;
+    const migratedItineraries = (
+      Array.isArray(state.itineraries) ? state.itineraries : legacyItineraries
+    )?.map((itinerary) => ({
+      ...itinerary,
+      duration: itinerary.duration >= 1 && itinerary.duration <= 3 ? itinerary.duration : 1,
+      stops: itinerary.stops.map((stop) => ({
+        ...stop,
+        dayIndex: stop.dayIndex && stop.dayIndex >= 1 && stop.dayIndex <= 3
+          ? stop.dayIndex
+          : 1,
+      })),
+    }));
     return {
       ...state,
-      itineraries: Array.isArray(state.itineraries) ? state.itineraries : legacyItineraries,
+      itineraries: migratedItineraries,
     };
   },
   save: (state: SavedAppState) => localStorage.write(STORAGE_KEY, state),

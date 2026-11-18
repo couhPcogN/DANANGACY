@@ -8,9 +8,9 @@ export const defaultItinerary: Itinerary = {
   pace: 'Thư thả',
   saved: false,
   stops: [
-    { placeId: 'cham', start: '09:00', end: '10:30' },
-    { placeId: 'son-tra', start: '14:00', end: '16:00' },
-    { placeId: 'cau-rong', start: '17:00', end: '18:00' },
+    { placeId: 'cham', start: '09:00', end: '10:30', dayIndex: 1 },
+    { placeId: 'son-tra', start: '14:00', end: '16:00', dayIndex: 1 },
+    { placeId: 'cau-rong', start: '17:00', end: '18:00', dayIndex: 1 },
   ],
 };
 
@@ -22,9 +22,9 @@ export const initialItinerary: Itinerary = {
   pace: 'Thư thả',
   saved: true,
   stops: [
-    { placeId: 'chua-cau', start: '09:00', end: '10:30' },
-    { placeId: 'tan-ky', start: '14:00', end: '15:30' },
-    { placeId: 'hoai-river', start: '17:00', end: '18:30' },
+    { placeId: 'chua-cau', start: '09:00', end: '10:30', dayIndex: 1 },
+    { placeId: 'tan-ky', start: '14:00', end: '15:30', dayIndex: 1 },
+    { placeId: 'hoai-river', start: '17:00', end: '18:30', dayIndex: 1 },
   ],
 };
 

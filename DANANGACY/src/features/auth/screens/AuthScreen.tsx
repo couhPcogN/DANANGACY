@@ -9,7 +9,7 @@ import {
   Label,
   PlacePhoto,
   Screen,
-} from '../../../components';
+} from '../../../shared/components';
 import { images } from '../../../config/images';
 import { colors } from '../../../theme';
 import { Divider } from '../components/Divider';

@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useNavigationViewModel } from '../../../navigation/NavigationProvider';
-import { notify } from '../../../utils/notify';
+import { useNavigationViewModel } from '../../../app/navigation/NavigationProvider';
+import { notify } from '../../../shared/utils/notify';
 import { useAuthModel } from '../providers/AuthProvider';
 import { useProfileModel } from '../../profile/providers/ProfileProvider';
 

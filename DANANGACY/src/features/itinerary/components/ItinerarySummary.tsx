@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { View } from 'react-native';
-import { Label } from '../../../components';
+import { Label } from '../../../shared/components';
 import { colors } from '../../../theme';
 import type { Itinerary } from '../types';
+import { formatVietnamDate } from '../../../shared/utils/date';
 
 type ItinerarySummaryProps = { itinerary: Itinerary };
 
@@ -16,7 +17,7 @@ export function ItinerarySummary({ itinerary }: ItinerarySummaryProps) {
         <Ionicons name="calendar-outline" size={21} color={colors.ink} />
         <View>
           <Label size={14} weight="medium">
-            {itinerary.date} · {itinerary.duration} ngày
+            {formatVietnamDate(itinerary.date)} · {itinerary.duration} ngày
           </Label>
           <Label size={12} color={colors.muted}>
             {itinerary.stops.length} điểm đến · Nhịp độ {itinerary.pace.toLowerCase()}

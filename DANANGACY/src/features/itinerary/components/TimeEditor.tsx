@@ -1,5 +1,5 @@
 import { View } from 'react-native';
-import { Button, Card, Field, InfoBanner, Label } from '../../../components';
+import { Button, Card, Field, InfoBanner, Label } from '../../../shared/components';
 import { colors } from '../../../theme';
 
 type TimeEditorProps = {

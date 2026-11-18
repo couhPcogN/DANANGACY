@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { useNavigationViewModel } from '../../../navigation/NavigationProvider';
-import { notify } from '../../../utils/notify';
-import type { RouteName } from '../../../navigation/types';
+import { useNavigationViewModel } from '../../../app/navigation/NavigationProvider';
+import { notify } from '../../../shared/utils/notify';
+import type { RouteName } from '../../../app/navigation/types';
 import { useProfileModel } from '../providers/ProfileProvider';
 import { useAuthModel } from '../../auth/providers/AuthProvider';
 import { useFavoritesModel } from '../../explore/providers/FavoritesProvider';

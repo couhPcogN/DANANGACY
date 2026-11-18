@@ -1,8 +1,17 @@
 import type { Itinerary } from '../types';
 
+export function togglePreference(preferences: string[], preference: string): string[] {
+  return preferences.includes(preference)
+    ? preferences.filter((item) => item !== preference)
+    : [...preferences, preference];
+}
+
 export const cloneItinerary = (itinerary: Itinerary): Itinerary => ({
   ...itinerary,
-  stops: itinerary.stops.map((stop) => ({ ...stop })),
+  stops: itinerary.stops.map((stop) => ({
+    ...stop,
+    dayIndex: stop.dayIndex ?? 1,
+  })),
 });
 export const createSavedItinerary = (itinerary: Itinerary): Itinerary => ({
   ...itinerary,

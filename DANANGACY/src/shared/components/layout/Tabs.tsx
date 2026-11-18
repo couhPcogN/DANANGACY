@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, View } from 'react-native';
-import type { TabName } from '../../navigation/types';
-import { useNavigationViewModel } from '../../navigation/NavigationProvider';
-import { colors } from '../../theme';
+import type { TabName } from '../../../app/navigation/types';
+import { useNavigationViewModel } from '../../../app/navigation/NavigationProvider';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { colors } from '../../../theme';
 
 import { Label } from '../ui/Label';
 import type { IconName } from '../ui/types';
@@ -29,8 +30,9 @@ type TabsProps = { active: TabName };
 
 export function Tabs({ active }: TabsProps) {
   const { tab } = useNavigationViewModel();
+  const insets = useSafeAreaInsets();
   return (
-    <View style={styles.tabs}>
+    <View style={[styles.tabs, { paddingBottom: Math.max(4, insets.bottom) }]}>
       {tabItems.map((item) => (
         <Pressable
           key={item.name}

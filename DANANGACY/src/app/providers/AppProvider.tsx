@@ -1,18 +1,18 @@
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
-import { AuthProvider, useAuthModel } from '../features/auth/providers/AuthProvider';
+import { AuthProvider, useAuthModel } from '../../features/auth/providers/AuthProvider';
 import {
   FavoritesProvider,
   useFavoritesModel,
-} from '../features/explore/providers/FavoritesProvider';
-import { GameProvider, useGameModel } from '../features/game/providers/GameProvider';
+} from '../../features/explore/providers/FavoritesProvider';
+import { GameProvider, useGameModel } from '../../features/game/providers/GameProvider';
 import {
   ItineraryProvider,
   useItineraryModel,
-} from '../features/itinerary/providers/ItineraryProvider';
-import { ProfileProvider, useProfileModel } from '../features/profile/providers/ProfileProvider';
-import { appStateRepository } from '../lib/storage/appStateRepository';
-import type { SavedAppState } from '../lib/storage/appStateRepository';
+} from '../../features/itinerary/providers/ItineraryProvider';
+import { ProfileProvider, useProfileModel } from '../../features/profile/providers/ProfileProvider';
+import { appStateRepository } from '../../services/storage/appStateRepository';
+import type { SavedAppState } from '../../services/storage/appStateRepository';
 import { NavigationProvider } from '../navigation/NavigationProvider';
 
 function PersistLocalState({ children }: { children: ReactNode }) {

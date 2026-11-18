@@ -14,13 +14,14 @@ import {
   Screen,
   SectionTitle,
   Tabs,
-} from '../../../components';
+} from '../../../shared/components';
 import { images } from '../../../config/images';
 import { colors } from '../../../theme';
 import { StopCard } from '../components/StopCard';
 import { ItineraryStopsEditor } from '../components/ItineraryStopsEditor';
 import { ItinerarySummary } from '../components/ItinerarySummary';
 import { useItineraryViewModel } from '../viewmodels/useItineraryViewModel';
+import { formatDayLabel, formatVietnamDate } from '../../../shared/utils/date';
 
 export function ItineraryScreen() {
   const {
@@ -57,10 +58,13 @@ export function ItineraryScreen() {
     setSearch,
     editingTime,
     selectedItinerary,
+    selectedItineraryFound,
     setItinerary,
     beginTimeEdit,
     beginSavedTimeEdit,
     timeEditor,
+    selectedPreferences,
+    togglePreference,
   } = useItineraryViewModel();
 
   if (route.name === 'itinerary')
@@ -80,20 +84,29 @@ export function ItineraryScreen() {
           />
         </View>
         {filter === 'Sắp tới' ? (
-          itineraries.map((itinerary) => (
-            <Card key={itinerary.id}>
-              <PlacePhoto source={images.daNang} name={itinerary.title} height={150} />
-              <View style={{ marginTop: 10, marginBottom: 7 }}>
-                <Pill title="Sắp tới" selected />
-              </View>
-              <ItinerarySummary itinerary={itinerary} />
-              <Button
-                title="Xem lịch trình"
-                kind="secondary"
-                onPress={() => navigate('itineraryDetail', itinerary.id)}
-              />
+          itineraries.length ? (
+            itineraries.map((itinerary) => (
+              <Card key={itinerary.id}>
+                <PlacePhoto source={images.daNang} name={itinerary.title} height={150} />
+                <View style={{ marginTop: 10, marginBottom: 7 }}>
+                  <Pill title="Sắp tới" selected />
+                </View>
+                <ItinerarySummary itinerary={itinerary} />
+                <Button
+                  title="Xem lịch trình"
+                  kind="secondary"
+                  onPress={() => navigate('itineraryDetail', itinerary.id)}
+                />
+              </Card>
+            ))
+          ) : (
+            <Card>
+              <Label weight="bold">Chưa có lịch trình sắp tới</Label>
+              <Label size={12} color={colors.muted} style={{ marginTop: 6 }}>
+                Tạo lịch trình để bắt đầu hành trình của bạn.
+              </Label>
             </Card>
-          ))
+          )
         ) : (
           <Card>
             <Label color={colors.muted}>Chưa có lịch trình đã hoàn thành.</Label>
@@ -195,12 +208,12 @@ export function ItineraryScreen() {
         </Label>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 7, marginBottom: 25 }}>
           {['Di sản & văn hóa', 'Bảo tàng', 'Thiên nhiên', 'Kiến trúc', 'Cảnh quan đô thị'].map(
-            (x, i) => (
+            (x) => (
               <Pill
                 key={x}
                 title={x}
-                selected={i < 3}
-                onPress={() => notify(`Đã chọn sở thích ${x}.`)}
+                selected={selectedPreferences.includes(x)}
+                onPress={() => togglePreference(x)}
               />
             ),
           )}
@@ -253,9 +266,8 @@ export function ItineraryScreen() {
         </Label>
         <Progress step={3} total={3} />
         <SectionTitle
-          title="5 điểm đến"
+          title={`${availablePlaces.length} điểm đến`}
           action={`Đã chọn ${draft.stops.length}`}
-          onAction={() => {}}
         />
         <Field
           label=""
@@ -295,9 +307,7 @@ export function ItineraryScreen() {
           <ItinerarySummary itinerary={draft} />
         </View>
         <Card>
-          <Label weight="bold">
-            Ngày 1 / {draft.duration} · {draft.date}
-          </Label>
+          <Label weight="bold">{formatDayLabel(1, draft.date)}</Label>
         </Card>
         <Label size={13} color={colors.muted} style={{ marginBottom: 14 }}>
           Khung giờ gợi ý · Chỉnh sửa trước khi lưu
@@ -354,6 +364,30 @@ export function ItineraryScreen() {
       </Screen>
     );
 
+  if (
+    [
+      'itineraryDetail',
+      'itineraryEdit',
+      'itineraryEditPlaces',
+      'weather',
+      'replacement',
+      'replacementConfirm',
+    ].includes(route.name) &&
+    !selectedItineraryFound
+  ) {
+    return (
+      <Screen bottom={<Tabs active="itinerary" />} tabs>
+        <Header title="Lịch trình không tồn tại" onBack={() => tab('itinerary')} />
+        <Card>
+          <Label weight="bold">Không tìm thấy lịch trình</Label>
+          <Label size={13} color={colors.muted} style={{ marginTop: 8 }}>
+            Lịch trình trong liên kết không tồn tại hoặc đã bị thay đổi.
+          </Label>
+        </Card>
+      </Screen>
+    );
+  }
+
   if (route.name === 'itineraryDetail')
     return (
       <Screen
@@ -384,7 +418,8 @@ export function ItineraryScreen() {
             onPress={() => navigate('weather', selectedItinerary.id)}
           >
             <InfoBanner tone="blue" icon="rainy-outline">
-              15/11 · 27–30°C · Có thể mưa 14:00–16:00 tại Sơn Trà. Xem gợi ý thay thế
+              {formatVietnamDate(selectedItinerary.date)} · 27–30°C · Có thể mưa 14:00–16:00 tại Sơn
+              Trà. Xem gợi ý thay thế
             </InfoBanner>
           </Pressable>
         ) : (
@@ -394,8 +429,7 @@ export function ItineraryScreen() {
         )}
         <Card>
           <Label weight="bold" color={colors.primaryDark}>
-            {'Ngày 1 / 1  '}
-            {selectedItinerary.date.slice(0, 5)}
+            {formatDayLabel(1, selectedItinerary.date)}
           </Label>
         </Card>
         <SectionTitle title={`Ngày 1 · ${selectedItinerary.stops.length} điểm đến`} />
@@ -492,7 +526,9 @@ export function ItineraryScreen() {
           <Label size={23} weight="bold" color={colors.info}>
             {'☂  Mưa có thể đến'}
           </Label>
-          <Label color={colors.info}>15/11/2026 · 14:00–16:00 · 27°C</Label>
+          <Label color={colors.info}>
+            {formatVietnamDate(selectedItinerary.date)} · 14:00–16:00 · 27°C
+          </Label>
           <Label color={colors.info} style={{ marginTop: 12 }}>
             Khả năng mưa 80% tại Sơn Trà, trùng với điểm tham quan ngoài trời của bạn.
           </Label>
@@ -502,7 +538,7 @@ export function ItineraryScreen() {
         <Card>
           <Label weight="bold">{selectedItinerary.title}</Label>
           <Label size={13} color={colors.muted}>
-            2 điểm còn lại được giữ nguyên
+            Các điểm còn lại được giữ nguyên
           </Label>
           <Label size={13} color={colors.muted} style={{ marginTop: 9 }}>
             Chọn một điểm trong nhà để tiếp tục khám phá mà không thay đổi khung giờ.
@@ -526,7 +562,8 @@ export function ItineraryScreen() {
       >
         <Header title="Địa điểm thay thế" onBack={back} />
         <InfoBanner tone="blue" icon="rainy-outline">
-          Thay Sơn Trà · 15/11, 14:00–16:00. Ưu tiên điểm trong nhà vì dự báo mưa.
+          Thay Sơn Trà · {formatVietnamDate(selectedItinerary.date)}, 14:00–16:00. Ưu tiên điểm
+          trong nhà vì dự báo mưa.
         </InfoBanner>
         <SectionTitle title="Địa điểm thay thế trong nhà" />
         <PlaceRow
@@ -563,14 +600,14 @@ export function ItineraryScreen() {
       <Label weight="bold" style={{ marginTop: 16 }}>
         {selectedItinerary.title}
       </Label>
-      <Pill title="15/11/2026 · 14:00–16:00" tone="blue" />
+      <Pill title={`${formatVietnamDate(selectedItinerary.date)} · 14:00–16:00`} tone="blue" />
       <SectionTitle title="ĐIỂM ĐẾN HIỆN TẠI" />
       <PlaceRow place={weatherPlace} onPress={() => navigate('place', 'son-tra')} />
       <View style={{ alignItems: 'center' }}>
         <Ionicons name="arrow-down" size={25} color={colors.primaryDark} />
       </View>
       <SectionTitle title="ĐIỂM ĐẾN THAY THẾ" />
-      <PlaceRow place={replacementPlace} selected onPress={() => {}} />
+      <PlaceRow place={replacementPlace} selected />
       <InfoBanner tone="green">
         Giữ nguyên khung giờ 14:00–16:00. Hai điểm còn lại không đổi. Chỉ cập nhật khi bạn xác nhận.
       </InfoBanner>

@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { colors } from '../../theme';
+import { colors } from '../../../theme';
 
 import { Label } from './Label';
 

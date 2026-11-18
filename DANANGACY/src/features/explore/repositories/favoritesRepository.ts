@@ -1,4 +1,4 @@
-import { createStore } from '../../../lib/state/createStore';
+import { createStore } from '../../../shared/state/createStore';
 
 export function createFavoritesRepository(initial?: string[]) {
   const store = createStore({

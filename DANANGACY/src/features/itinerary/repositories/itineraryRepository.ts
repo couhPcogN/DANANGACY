@@ -1,4 +1,4 @@
-import { createStore } from '../../../lib/state/createStore';
+import { createStore } from '../../../shared/state/createStore';
 import { defaultItinerary, initialItinerary } from '../data/demoItineraries';
 import {
   cloneItinerary,
@@ -8,22 +8,40 @@ import {
 } from '../models/itinerary';
 import type { Itinerary } from '../types';
 
+export const DEFAULT_PREFERENCES = ['Di sản & văn hóa', 'Bảo tàng', 'Thiên nhiên'];
+
 export function createItineraryRepository(initial?: Itinerary[]) {
   const store = createStore({
     itineraries: Array.isArray(initial) ? initial : [cloneItinerary(initialItinerary)],
     draft: cloneItinerary(defaultItinerary),
     editingId: null as string | null,
+    selectedPreferences: [...DEFAULT_PREFERENCES],
   });
   return {
     getSnapshot: store.getSnapshot,
     subscribe: store.subscribe,
     actions: {
       setDraft: (draft: Itinerary) => store.update((state) => ({ ...state, draft })),
+      setPreferences(preferences: string[]) {
+        store.update((state) => ({ ...state, selectedPreferences: [...preferences] }));
+      },
+      togglePreference(preference: string) {
+        store.update((state) => ({
+          ...state,
+          selectedPreferences: state.selectedPreferences.includes(preference)
+            ? state.selectedPreferences.filter((item) => item !== preference)
+            : [...state.selectedPreferences, preference],
+        }));
+      },
+      resetPreferences() {
+        store.update((state) => ({ ...state, selectedPreferences: [...DEFAULT_PREFERENCES] }));
+      },
       startCreate() {
         store.update((state) => ({
           ...state,
           editingId: null,
           draft: cloneItinerary(defaultItinerary),
+          selectedPreferences: [...DEFAULT_PREFERENCES],
         }));
       },
       saveDraft(): Itinerary {

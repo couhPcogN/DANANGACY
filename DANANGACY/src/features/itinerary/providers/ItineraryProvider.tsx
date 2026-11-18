@@ -1,4 +1,4 @@
-import { createModelContext } from '../../../providers/createModelContext';
+import { createModelContext } from '../../../shared/state/createModelContext';
 import { createItineraryRepository } from '../repositories/itineraryRepository';
 
 const context = createModelContext('Itinerary', createItineraryRepository);

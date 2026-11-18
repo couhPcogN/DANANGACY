@@ -1,37 +1,37 @@
 import { useMemo, useState } from 'react';
-import { useNavigationViewModel } from '../../../navigation/NavigationProvider';
+import { useNavigationViewModel } from '../../../app/navigation/NavigationProvider';
 import { useFavoritesModel } from '../providers/FavoritesProvider';
 import { placeRepository } from '../repositories/placeRepository';
+import { filterPlaces } from '../repositories/placeRepository';
 
 export function useExploreViewModel() {
-  const { route, navigate, back } = useNavigationViewModel();
+  const { route, navigate, back, tab } = useNavigationViewModel();
   const { favorites, toggleFavorite } = useFavoritesModel();
   const places = placeRepository.list();
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState('Tất cả');
+  const [categoryFilter, setCategoryFilter] = useState('Tất cả');
+  const categories = Array.from(new Set(places.map((place) => place.category))).sort();
   const visible = useMemo(
-    () =>
-      places.filter(
-        (p) =>
-          (filter === 'Tất cả' ||
-            (filter === 'Bảo tàng' && p.tags.includes('Bảo tàng')) ||
-            p.category === filter) &&
-          p.name.toLocaleLowerCase('vi').includes(query.toLocaleLowerCase('vi')),
-      ),
-    [query, filter],
+    () => filterPlaces(places, query, filter, categoryFilter),
+    [query, filter, categoryFilter, places],
   );
 
-  const place = placeRepository.getById(route.id ?? 'cham');
-  const saved = favorites.includes(place.id);
+  const place = route.id ? placeRepository.findById(route.id) : placeRepository.getById('cham');
+  const placeFound = place !== undefined;
+  const saved = place ? favorites.includes(place.id) : false;
 
-  const mapPlaces = places.filter((place) => filter === 'Tất cả' || place.category === filter);
-  const featuredPlace = places[0];
+  const filteredMapPlaces = filterPlaces(places, query, filter, categoryFilter);
+  const mapPlaces = filteredMapPlaces;
+  const featuredPlace = filteredMapPlaces[0];
 
   return {
+    tab,
     mapPlaces,
     featuredPlace,
 
     place,
+    placeFound,
     saved,
     route,
     navigate,
@@ -41,6 +41,9 @@ export function useExploreViewModel() {
     setQuery,
     filter,
     setFilter,
+    categoryFilter,
+    setCategoryFilter,
+    categories,
     visible,
   };
 }

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { StyleProp, Text, TextStyle } from 'react-native';
-import { colors } from '../../theme';
+import { colors } from '../../../theme';
 
 type LabelProps = {
   children: ReactNode;

@@ -1,5 +1,5 @@
 import { Image, View } from 'react-native';
-import { Card, Label } from '../../../components';
+import { Card, Label } from '../../../shared/components';
 import { images } from '../../../config/images';
 
 type GoogleButtonProps = { title: string; onPress: () => void };

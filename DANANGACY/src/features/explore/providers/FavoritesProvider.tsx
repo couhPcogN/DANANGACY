@@ -1,4 +1,4 @@
-import { createModelContext } from '../../../providers/createModelContext';
+import { createModelContext } from '../../../shared/state/createModelContext';
 import { createFavoritesRepository } from '../repositories/favoritesRepository';
 
 const context = createModelContext('Favorites', createFavoritesRepository);

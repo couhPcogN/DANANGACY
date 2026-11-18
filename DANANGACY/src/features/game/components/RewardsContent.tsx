@@ -1,5 +1,5 @@
 import { View } from 'react-native';
-import { Button, Card, InfoBanner, Label, Pill, SectionTitle } from '../../../components';
+import { Button, Card, InfoBanner, Label, Pill, SectionTitle } from '../../../shared/components';
 import { colors } from '../../../theme';
 
 type RewardsContentProps = {

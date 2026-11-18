@@ -11,7 +11,7 @@ import {
   Screen,
   SectionTitle,
   Tabs,
-} from '../../../components';
+} from '../../../shared/components';
 import { colors } from '../../../theme';
 import { useProfileViewModel } from '../viewmodels/useProfileViewModel';
 

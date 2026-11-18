@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { colors } from '../../theme';
+import { colors } from '../../../theme';
 
 import { Label } from '../ui/Label';
 import type { IconName } from '../ui/types';
@@ -11,9 +11,17 @@ type HeaderProps = {
   onBack?: () => void;
   action?: () => void;
   actionIcon?: IconName;
+  actionAccessibilityLabel?: string;
 };
 
-export function Header({ title, subtitle, onBack, action, actionIcon }: HeaderProps) {
+export function Header({
+  title,
+  subtitle,
+  onBack,
+  action,
+  actionIcon,
+  actionAccessibilityLabel,
+}: HeaderProps) {
   return (
     <View style={styles.header}>
       <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
@@ -42,6 +50,7 @@ export function Header({ title, subtitle, onBack, action, actionIcon }: HeaderPr
       {action && actionIcon ? (
         <Pressable
           accessibilityRole="button"
+          accessibilityLabel={actionAccessibilityLabel ?? title}
           hitSlop={4}
           onPress={action}
           style={styles.iconButton}

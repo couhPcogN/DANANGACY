@@ -55,7 +55,7 @@ const { createItineraryRepository } = load(
 const { createGameStateRepository } = load('src/features/game/repositories/gameStateRepository.ts');
 
 test('observable store has stable snapshots and can unsubscribe', () => {
-  const { createStore } = load('src/lib/state/createStore.ts');
+  const { createStore } = load('src/shared/state/createStore.ts');
   const store = createStore({ value: 1 });
   const first = store.getSnapshot();
   let calls = 0;
@@ -68,6 +68,117 @@ test('observable store has stable snapshots and can unsubscribe', () => {
   unsubscribe();
   store.update(() => ({ value: 3 }));
   assert.equal(calls, 1);
+});
+
+test('responsive layout has full mobile width and consistent breakpoints', () => {
+  const { getResponsiveLayout } = load('src/shared/layout/responsive.ts');
+  for (const width of [360, 375, 390, 430]) {
+    const layout = getResponsiveLayout(width);
+    assert.equal(layout.maxWidth, undefined);
+    assert.equal(layout.isWideLayout, false);
+  }
+  assert.equal(getResponsiveLayout(360).horizontalPadding, 16);
+  assert.equal(getResponsiveLayout(375).horizontalPadding, 16);
+  assert.equal(getResponsiveLayout(390).horizontalPadding, 16);
+  assert.equal(getResponsiveLayout(430).horizontalPadding, 20);
+  assert.deepEqual(getResponsiveLayout(768), {
+    isWideLayout: true,
+    horizontalPadding: 24,
+    maxWidth: 768,
+  });
+});
+
+test('Vietnam date formatting validates real calendar dates', () => {
+  const dateUtils = load('src/shared/utils/date.ts');
+  assert.equal(dateUtils.formatVietnamDate('19/11/2026'), '19/11/2026');
+  assert.equal(dateUtils.formatDayLabel(1, '19/11/2026'), 'Ngày 1 · 19/11/2026');
+  assert.equal(dateUtils.isValidVietnamDate('29/02/2026'), false);
+  assert.equal(dateUtils.isValidVietnamDate('29/02/2024'), true);
+  assert.equal(dateUtils.formatVietnamDate('31/99/2026'), '31/99/2026');
+});
+
+test('Explore filtering separates indoor/outdoor from categories', () => {
+  const { demoPlaces } = load('src/features/explore/data/demoPlaces.ts');
+  const { filterPlaces } = load('src/features/explore/repositories/placeRepository.ts');
+  const sonTra = demoPlaces.find((place) => place.id === 'son-tra');
+  assert.equal(sonTra.space, 'OUTDOOR');
+  assert.equal(sonTra.category, 'Thiên nhiên');
+  assert.ok(sonTra.characteristics.includes('Ven biển'));
+  assert.equal(filterPlaces(demoPlaces, '', 'Ngoài trời').length, 3);
+  assert.equal(filterPlaces(demoPlaces, '', 'Trong nhà').length, 2);
+  assert.equal(filterPlaces(demoPlaces, '', 'Tất cả', 'Thiên nhiên').length, 2);
+  assert.equal(filterPlaces(demoPlaces, 'Sơn Trà', 'Ngoài trời', 'Thiên nhiên').length, 1);
+  assert.equal(filterPlaces(demoPlaces, 'không tồn tại').length, 0);
+});
+
+test('itinerary preference selection toggles without mutating saved data', () => {
+  const { togglePreference } = load('src/features/itinerary/models/itinerary.ts');
+  assert.deepEqual(togglePreference(['Thiên nhiên'], 'Bảo tàng'), ['Thiên nhiên', 'Bảo tàng']);
+  assert.deepEqual(togglePreference(['Thiên nhiên', 'Bảo tàng'], 'Thiên nhiên'), ['Bảo tàng']);
+});
+
+test('itinerary preferences survive screen remount and reset with a new draft', () => {
+  const repository = createItineraryRepository([]);
+  repository.actions.togglePreference('Thiên nhiên');
+  repository.actions.togglePreference('Kiến trúc');
+  assert.deepEqual(repository.getSnapshot().selectedPreferences, [
+    'Di sản & văn hóa',
+    'Bảo tàng',
+    'Kiến trúc',
+  ]);
+  repository.actions.startCreate();
+  assert.deepEqual(repository.getSnapshot().selectedPreferences, [
+    'Di sản & văn hóa',
+    'Bảo tàng',
+    'Thiên nhiên',
+  ]);
+});
+
+test('quiz resume starts at the first unanswered answer and completed restore never awards again', () => {
+  const partial = createGameStateRepository({
+    quizCompleted: false,
+    quizAnswers: [0, 1, null, null, null],
+    points: 120,
+  });
+  assert.equal(partial.getSnapshot().quizIndex, 2);
+  assert.deepEqual(partial.getSnapshot().quizAnswers, [0, 1, null, null, null]);
+  assert.equal(partial.getSnapshot().points, 120);
+
+  const completed = createGameStateRepository({
+    quizCompleted: true,
+    quizAnswers: [0, 1, 1, 1, 2],
+    points: 170,
+  });
+  assert.equal(completed.getSnapshot().quizIndex, 0);
+  assert.equal(completed.getSnapshot().completionAwarded, 0);
+  assert.equal(completed.actions.redeemReward(), true);
+  assert.equal(completed.getSnapshot().points, 70);
+  completed.actions.nextQuestion();
+  assert.equal(completed.getSnapshot().points, 70);
+});
+
+test('custom navigation preserves stack, tabs and hardware back behavior', () => {
+  const { createNavigation } = load('src/app/navigation/createNavigation.ts');
+  const navigation = createNavigation({ name: 'home' });
+  assert.equal(navigation.actions.canGoBack(), false);
+  navigation.actions.navigate('place', 'cham');
+  assert.equal(navigation.actions.canGoBack(), true);
+  navigation.actions.back();
+  assert.deepEqual(navigation.getSnapshot().stack, [{ name: 'home' }]);
+  navigation.actions.navigate('itineraryDetail', 'missing');
+  navigation.actions.tab('profile');
+  assert.deepEqual(navigation.getSnapshot().stack, [{ name: 'profile' }]);
+  assert.equal(navigation.actions.canGoBack(), false);
+  navigation.actions.reset({ name: 'welcome' });
+  assert.deepEqual(navigation.getSnapshot().stack, [{ name: 'welcome' }]);
+});
+
+test('navigation rejects unknown route names', () => {
+  const { isRouteName } = load('src/app/navigation/types.ts');
+  assert.equal(isRouteName('home'), true);
+  assert.equal(isRouteName('place'), true);
+  assert.equal(isRouteName('unknown-screen'), false);
+  assert.equal(isRouteName(null), false);
 });
 
 test('draft edits do not change saved itineraries until save', () => {
@@ -125,6 +236,9 @@ test('quiz resumes progress, awards once and prevents duplicate reward redemptio
     if (repository.actions.nextQuestion()) break;
   }
   assert.equal(repository.getSnapshot().points, 170);
+  assert.equal(repository.getSnapshot().completionAwarded, 50);
+  repository.actions.acknowledgeCompletionAward();
+  assert.equal(repository.getSnapshot().completionAwarded, 0);
   repository.actions.nextQuestion();
   assert.equal(repository.getSnapshot().points, 170);
   assert.equal(repository.actions.redeemReward(), true);
@@ -159,12 +273,15 @@ test('feature repositories own independent state and restore saved progress', ()
   });
   restored.actions.startQuiz();
   assert.equal(restored.getSnapshot().quizIndex, 0);
+  assert.equal(restored.getSnapshot().quizCompleted, true);
+  assert.deepEqual(restored.getSnapshot().quizAnswers, [0, 1, 1, 1, 2]);
+  assert.equal(restored.getSnapshot().completionAwarded, 0);
   assert.equal(restored.actions.redeemReward(), false);
   assert.equal(restored.getSnapshot().points, 70);
 });
 
 test('local persistence migrates legacy itineraries without losing other feature data', async () => {
-  const { appStateRepository } = load('src/lib/storage/appStateRepository.ts');
+  const { appStateRepository } = load('src/services/storage/appStateRepository.ts');
   const itinerary = createItineraryRepository().getSnapshot().itineraries[0];
   stored = JSON.stringify({
     signedIn: true,

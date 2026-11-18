@@ -1,4 +1,4 @@
-import { createStore } from '../../../lib/state/createStore';
+import { createStore } from '../../../shared/state/createStore';
 
 export type Profile = { name: string; email: string; phone: string };
 

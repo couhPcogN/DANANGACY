@@ -1,5 +1,5 @@
 import { View } from 'react-native';
-import { Label } from '../../../components';
+import { Label } from '../../../shared/components';
 import { colors } from '../../../theme';
 
 export function Divider() {

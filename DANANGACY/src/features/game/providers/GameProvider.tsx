@@ -1,4 +1,4 @@
-import { createModelContext } from '../../../providers/createModelContext';
+import { createModelContext } from '../../../shared/state/createModelContext';
 import { createGameStateRepository } from '../repositories/gameStateRepository';
 
 const context = createModelContext('Game', createGameStateRepository);

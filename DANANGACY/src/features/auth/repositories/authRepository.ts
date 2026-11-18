@@ -1,4 +1,4 @@
-import { createStore } from '../../../lib/state/createStore';
+import { createStore } from '../../../shared/state/createStore';
 
 export function createAuthRepository(initial?: boolean) {
   const store = createStore({ signedIn: initial === true });

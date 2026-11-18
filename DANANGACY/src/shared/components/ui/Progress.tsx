@@ -1,5 +1,5 @@
 import { View } from 'react-native';
-import { colors } from '../../theme';
+import { colors } from '../../../theme';
 
 type ProgressProps = { step: number; total: number; compact?: boolean };
 

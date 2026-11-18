@@ -1,4 +1,10 @@
-export type Stop = { placeId: string; start: string; end: string };
+export type DayIndex = 1 | 2 | 3;
+export type Stop = {
+  placeId: string;
+  start: string;
+  end: string;
+  dayIndex?: DayIndex;
+};
 export type Itinerary = {
   id: string;
   title: string;
