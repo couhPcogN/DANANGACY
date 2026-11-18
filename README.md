@@ -3,19 +3,19 @@
 Repository chung cho frontend và backend của DANANGACY.
 
 ```text
-DANANGACY/   # Frontend React Native + Expo
+frontend/    # Frontend React Native + Expo
 backend/     # Backend Python + FastAPI + PostgreSQL
 ```
 
 ## Frontend
 
 ```powershell
-cd DANANGACY
+cd frontend
 npm ci
 npm start
 ```
 
-Xem cấu trúc MVVM theo tính năng, cách chạy và kiểm tra trong [tài liệu frontend](DANANGACY/README.md).
+Xem cấu trúc MVVM theo tính năng, cách chạy và kiểm tra trong [tài liệu frontend](frontend/README.md).
 
 ## Backend
 
