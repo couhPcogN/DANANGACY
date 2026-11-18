@@ -6,85 +6,74 @@ description: >-
   (React Native Expo MVVM) và Backend (FastAPI + SQLAlchemy + PostgreSQL).
 ---
 
-# DANANGACY Developer & Agent Playbook
+# DANANGACY Guidelines
 
-Dự án DANANGACY là ứng dụng du lịch khám phá di sản Đà Nẵng, áp dụng mô hình Monorepo gồm **Frontend Mobile** và **Backend API**.
+## Goal
 
----
+Đảm bảo mọi mã nguồn phát triển cho dự án DANANGACY tuân thủ nghiêm ngặt mô hình Monorepo, kiến trúc MVVM ở Frontend (`frontend/`) và các quy tắc nghiệp vụ lịch trình ở Backend (`backend/`).
 
-## 1. Cấu trúc Monorepo
+## Instructions
 
-```text
-DANANGACY/ (Root)
-├── .agents/skills/danangacy-guidelines/   # Workspace Skill chia sẻ cho cả team
-├── frontend/                             # Mobile App (React Native + Expo)
-├── backend/                              # Backend Service (Python FastAPI + PostgreSQL)
-├── docs/                                 # Tài liệu kỹ thuật dự án
-├── .gitignore
-└── README.md
+1. **Bước 1: Kiểm tra trạng thái Git.**
+   - Chạy `git status` trước khi bắt đầu công việc.
+   - Tuân thủ quy trình làm việc và các loại trừ bị cấm theo hướng dẫn tại [git-workflow.md](./references/git-workflow.md).
+
+2. **Bước 2: Phát triển hoặc chỉnh sửa Frontend (`frontend/`).**
+   - Đọc kỹ tài liệu kiến trúc tại [frontend-mvvm.md](./references/frontend-mvvm.md) trước khi viết code.
+   - Đảm bảo tuân thủ luồng: Screen (View) gọi ViewModel hook; ViewModel thao tác với Repository; Screen không gọi API trực tiếp.
+   - Sau khi hoàn thành code, bắt buộc chạy kiểm tra:
+     ```powershell
+     cd frontend
+     npm run typecheck
+     npm test
+     ```
+
+3. **Bước 3: Phát triển hoặc chỉnh sửa Backend (`backend/`).**
+   - Đọc kỹ tài liệu quy tắc nghiệp vụ tại [backend-rules.md](./references/backend-rules.md) trước khi viết code.
+   - Đảm bảo áp dụng đúng các ràng buộc lịch trình: 1–3 ngày, tối đa 8 điểm, mỗi điểm $\ge 30$ phút, khung giờ 06:00–22:00, không trùng giờ và quy tắc giữ nguyên khung giờ khi thay thế điểm do thời tiết.
+   - Sau khi hoàn thành code, bắt buộc chạy kiểm thử:
+     ```powershell
+     cd backend
+     .\.venv\Scripts\python.exe -m pytest
+     ```
+
+## Examples
+
+### Ví dụ 1: Tổ chức mã nguồn Frontend chuẩn MVVM
+
+```typescript
+// Screen (View) chỉ lắng nghe và ủy quyền cho ViewModel:
+export function ItineraryScreen() {
+  const { itinerary, isSaving, handleSaveDraft, handleTimeChange } = useItineraryViewModel();
+
+  return (
+    <Screen>
+      <TimeEditor onChange={handleTimeChange} />
+      <Button title="Lưu lịch trình" loading={isSaving} onPress={handleSaveDraft} />
+    </Screen>
+  );
+}
 ```
 
----
+### Ví dụ 2: Payload tạo lịch trình đúng chuẩn Backend Rules
 
-## 2. Quy chuẩn Frontend (`frontend/`)
+```json
+{
+  "title": "Một ngày di sản Đà Nẵng",
+  "date": "2026-11-15",
+  "duration": 1,
+  "pace": "Thư thả",
+  "stops": [
+    { "place_id": "cham", "day": 1, "start": "09:00", "end": "10:30" },
+    { "place_id": "son-tra", "day": 1, "start": "14:00", "end": "16:00" }
+  ]
+}
+```
+*Ghi chú: Lịch trình 1 ngày, 2 điểm dừng ($\le 8$), mỗi điểm ghé thăm từ 90 đến 120 phút ($\ge 30$ phút), khung giờ nằm trong 06:00–22:00 và không trùng nhau.*
 
-### Kiến trúc MVVM bắt buộc
-Tuân thủ nghiêm ngặt luồng: **View (Screen) → ViewModel → Model/Repository**.
+## Constraints
 
-1. **View / Screen (`src/features/*/screens/`):**
-   - Chỉ chịu trách nhiệm hiển thị UI và lắng nghe sự kiện người dùng.
-   - **Tuyệt đối KHÔNG** gọi trực tiếp API hoặc thao tác trực tiếp với Repository trong Screen.
-   - Luôn sử dụng custom hook ViewModel tương ứng (ví dụ: `useItineraryViewModel`).
-
-2. **ViewModel (`src/features/*/viewmodels/`):**
-   - Quản lý form state, validation, điều phối navigation và gọi các action từ Repository.
-
-3. **Repository & State (`src/features/*/repositories/`, `shared/state/`):**
-   - Quản lý dữ liệu (state/store) độc lập với React qua `createStore`.
-   - Sử dụng `useSyncExternalStore` để render tối ưu.
-   - Khóa lưu trữ cục bộ: `STORAGE_KEY = 'danangacy.demo.v1'`.
-
-4. **Lệnh kiểm tra chất lượng trước khi commit:**
-   ```powershell
-   cd frontend
-   npm run typecheck     # Kiểm tra TypeScript (0 lỗi)
-   npm test              # Chạy 16 bài kiểm tra MVVM
-   ```
-
----
-
-## 3. Quy chuẩn Backend (`backend/`)
-
-### Kiến trúc & Môi trường
-- **Framework:** FastAPI + SQLAlchemy 2.0 + Pydantic v2 + Alembic.
-- **Database:** PostgreSQL (chạy qua Docker container, cổng `5432`). Khóa chính dùng số nguyên (`Integer IDs`).
-- **Khởi chạy máy chủ:**
-  ```powershell
-  cd backend
-  .\.venv\Scripts\python.exe -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
-  ```
-
-### Quy tắc nghiệp vụ Lịch trình (`Itinerary Rules`)
-Bắt buộc tuân thủ khi viết API hoặc logic liên quan đến lịch trình:
-- **Độ dài chuyến đi:** 1 đến 3 ngày (`duration: 1..3`).
-- **Số điểm dừng:** Tối đa 8 điểm (`MAX_STOPS = 8`), tối thiểu 1 điểm.
-- **Thời gian ghé thăm:** Mỗi điểm tối thiểu 30 phút (`MIN_VISIT_MINUTES = 30`).
-- **Khung giờ hoạt động:** Nằm trong khoảng từ **06:00 đến 22:00**.
-- **Không trùng giờ:** Các điểm dừng trong cùng một ngày không được trùng lặp thời gian.
-- **Kiểm thử tự động:**
-  ```powershell
-  cd backend
-  .\.venv\Scripts\python.exe -m pytest
-  ```
-
----
-
-## 4. Quy tắc thích ứng thời tiết (Weather Replacement)
-- Khi điểm tham quan ngoài trời (như Bán đảo Sơn Trà) có cảnh báo thời tiết xấu (mưa > 70%), cho phép gợi ý thay thế bằng điểm trong nhà (như Bảo tàng Đà Nẵng).
-- **Quy tắc bất biến:** Phải giữ nguyên khung giờ ban đầu (`start`, `end`) và không làm xáo trộn các điểm dừng khác trong ngày.
-
----
-
-## 5. Quy trình làm việc với Git
-- Luôn kiểm tra `git status` trước khi thay đổi.
-- Không commit các thư mục tạm / cache: `.venv/`, `node_modules/`, `.expo/`, `dist/`, `.env`.
+- **CẤM** gọi API mạng (fetch, axios) hoặc mutate state trực tiếp bên trong component Screen (bắt buộc thông qua ViewModel và Repository).
+- **CẤM** tạo hoặc cập nhật lịch trình trùng khung giờ, vượt quá 8 điểm dừng, hoặc nằm ngoài khoảng 06:00 - 22:00.
+- **CẤM** làm thay đổi khung giờ (`start`, `end`) hoặc làm xáo trộn các điểm dừng khác khi thực hiện tính năng thay thế điểm do thời tiết xấu (Weather Replacement).
+- **CẤM** commit các tệp môi trường và phụ thuộc: `.venv/`, `node_modules/`, `.expo/`, `.env`.
