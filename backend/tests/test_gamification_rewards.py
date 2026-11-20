@@ -1,5 +1,9 @@
+from unittest.mock import patch
+
 from fastapi.testclient import TestClient
+from sqlalchemy import select
 from sqlalchemy.engine import Engine
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.db.seed import seed_demo_data
@@ -155,3 +159,162 @@ def test_voucher_claims_and_wallet(client: TestClient, db_engine: Engine) -> Non
     reasons = [t["reason"] for t in txs]
     assert "QUIZ_REWARD" in reasons
     assert "VOUCHER_CLAIM" in reasons
+
+
+def test_quiz_validation_and_anti_cheat(client: TestClient, db_engine: Engine) -> None:
+    with Session(db_engine) as session, session.begin():
+        seed_demo_data(session)
+
+    user = client.post(
+        "/api/auth/register",
+        json={
+            "email": "anticheat@danangacy.vn",
+            "password": "Password123",
+            "display_name": "AntiCheat Tester",
+        },
+    ).json()
+    headers = {"Authorization": f"Bearer {user['access_token']}"}
+
+    quizzes = client.get("/api/quizzes", headers=headers).json()
+    quiz = quizzes[0]
+    q1 = quiz["questions"][0]
+    q2 = quiz["questions"][1]
+
+    # 1. Option ID from question 1 used for question 2 (Cross-question option fraud)
+    fraud_payload = {
+        "answers": [
+            {"question_id": q1["id"], "selected_option_id": q1["options"][0]["id"]},
+            {"question_id": q2["id"], "selected_option_id": q1["options"][0]["id"]},
+        ]
+    }
+    fraud_res = client.post(
+        f"/api/quizzes/{quiz['id']}/submit", json=fraud_payload, headers=headers
+    )
+    assert fraud_res.status_code == 400
+    assert "không thuộc câu hỏi" in fraud_res.json()["detail"]
+
+    # 2. Non-existent option ID
+    fake_opt_payload = {
+        "answers": [
+            {"question_id": q1["id"], "selected_option_id": 999999},
+        ]
+    }
+    fake_opt_res = client.post(
+        f"/api/quizzes/{quiz['id']}/submit", json=fake_opt_payload, headers=headers
+    )
+    assert fake_opt_res.status_code == 400
+    assert "không thuộc câu hỏi" in fake_opt_res.json()["detail"]
+
+    # 3. Duplicate question ID in submission
+    dup_q_payload = {
+        "answers": [
+            {"question_id": q1["id"], "selected_option_id": q1["options"][0]["id"]},
+            {"question_id": q1["id"], "selected_option_id": q1["options"][1]["id"]},
+        ]
+    }
+    dup_q_res = client.post(
+        f"/api/quizzes/{quiz['id']}/submit", json=dup_q_payload, headers=headers
+    )
+    assert dup_q_res.status_code == 400
+    assert "trùng lặp" in dup_q_res.json()["detail"]
+
+    # 4. Question ID not belonging to this quiz
+    fake_q_payload = {
+        "answers": [
+            {"question_id": 999999, "selected_option_id": q1["options"][0]["id"]},
+        ]
+    }
+    fake_q_res = client.post(
+        f"/api/quizzes/{quiz['id']}/submit", json=fake_q_payload, headers=headers
+    )
+    assert fake_q_res.status_code == 400
+    assert "không thuộc bài trắc nghiệm" in fake_q_res.json()["detail"]
+
+
+def test_concurrent_quiz_submissions_no_double_reward(
+    client: TestClient, db_engine: Engine
+) -> None:
+    from app.repositories.quiz_repository import QuizRepository
+
+    with Session(db_engine) as session, session.begin():
+        seed_demo_data(session)
+
+    user = client.post(
+        "/api/auth/register",
+        json={
+            "email": "race_player@danangacy.vn",
+            "password": "Password123",
+            "display_name": "Race Player",
+        },
+    ).json()
+    token = user["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    quiz = client.get("/api/quizzes", headers=headers).json()[0]
+    detail = client.get(f"/api/quizzes/{quiz['id']}", headers=headers).json()
+
+    answers = []
+    with Session(db_engine) as session:
+        for q in detail["questions"]:
+            from app.models.quiz import QuizOption
+
+            opts = list(
+                session.scalars(select(QuizOption).where(QuizOption.question_id == q["id"]))
+            )
+            correct_opt = next(opt for opt in opts if opt.is_correct)
+            answers.append({"question_id": q["id"], "selected_option_id": correct_opt.id})
+
+    # 1. Normal submission awards 50 points
+    res1 = client.post(
+        f"/api/quizzes/{quiz['id']}/submit",
+        json={"answers": answers},
+        headers=headers,
+    )
+    assert res1.status_code == 200
+    assert res1.json()["points_awarded"] == 50
+    assert res1.json()["balance_points"] == 50
+
+    # 2. Sequential duplicate submission returns 0 points awarded
+    res2 = client.post(
+        f"/api/quizzes/{quiz['id']}/submit",
+        json={"answers": answers},
+        headers=headers,
+    )
+    assert res2.status_code == 200
+    assert res2.json()["points_awarded"] == 0
+    assert res2.json()["balance_points"] == 50
+    assert "trước đó" in res2.json()["message"]
+
+    # 3. Simulate race condition where RewardGrant unique constraint raises IntegrityError.
+    # The nested transaction must catch it, rollback savepoint, and return 0 points.
+    def mock_add_reward(self, grant):
+        raise IntegrityError(
+            "UNIQUE constraint failed: reward_grants.owner_uid, reward_grants.quiz_id",
+            params=None,
+            orig=Exception("UNIQUE constraint failed"),
+        )
+
+    with patch.object(QuizRepository, "add_reward_grant", mock_add_reward):
+        # We need a user who hasn't been granted yet
+        user2 = client.post(
+            "/api/auth/register",
+            json={
+                "email": "race_player2@danangacy.vn",
+                "password": "Password123",
+                "display_name": "Race Player Two",
+            },
+        ).json()
+        headers2 = {"Authorization": f"Bearer {user2['access_token']}"}
+
+        res3 = client.post(
+            f"/api/quizzes/{quiz['id']}/submit",
+            json={"answers": answers},
+            headers=headers2,
+        )
+        assert res3.status_code == 200
+        assert res3.json()["points_awarded"] == 0
+        assert "trước đó" in res3.json()["message"]
+
+    # Final wallet balance for user2 is 0 (no points awarded due to race condition conflict)
+    wallet2 = client.get("/api/wallet/me", headers=headers2).json()
+    assert wallet2["balance_points"] == 0

@@ -12,6 +12,7 @@ from app.core.exceptions import (
     DestinationNotFoundError,
     EmailAlreadyRegisteredError,
     InsufficientPointsError,
+    InvalidQuizSubmissionError,
     InvalidScheduleError,
     ItineraryConflictError,
     ItineraryNotFoundError,
@@ -52,6 +53,12 @@ def create_app() -> FastAPI:
     @app.exception_handler(QuizNotFoundError)
     async def quiz_not_found(_request: Request, exc: QuizNotFoundError) -> JSONResponse:
         return JSONResponse(status_code=404, content={"detail": str(exc)})
+
+    @app.exception_handler(InvalidQuizSubmissionError)
+    async def invalid_quiz_submission(
+        _request: Request, exc: InvalidQuizSubmissionError
+    ) -> JSONResponse:
+        return JSONResponse(status_code=400, content={"detail": str(exc)})
 
     @app.exception_handler(VoucherOfferNotFoundError)
     async def voucher_not_found(_request: Request, exc: VoucherOfferNotFoundError) -> JSONResponse:
