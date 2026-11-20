@@ -19,7 +19,12 @@ class Settings(BaseSettings):
     db_name: str = "danangacy"
     db_user: str = "postgres"
     db_password: SecretStr = SecretStr("")
-    cors_origins: list[str] = ["http://localhost:8081", "http://127.0.0.1:8081"]
+    cors_origins: list[str] = [
+        "http://localhost:8081",
+        "http://127.0.0.1:8081",
+        "http://10.103.48.63:8081",
+        "*",
+    ]
     gemini_api_key: SecretStr = SecretStr("")
     # Empty means a random per-process secret: tokens become invalid after every restart.
     jwt_secret_key: SecretStr = SecretStr("")

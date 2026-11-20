@@ -1,6 +1,5 @@
 import type { AuthTokenResponse, AuthUser } from '../../features/auth/types';
-
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+import { API_BASE_URL } from '../../config/api';
 
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {
@@ -32,8 +31,11 @@ export const authService = {
       });
       return await handleResponse<AuthTokenResponse>(res);
     } catch (err: unknown) {
-      if (err instanceof Error && err.message.includes('fetch')) {
-        throw new Error('Không thể kết nối đến máy chủ API (127.0.0.1:8000).');
+      if (
+        err instanceof Error &&
+        (err.message.includes('fetch') || err.message.includes('Network'))
+      ) {
+        throw new Error(`Không thể kết nối đến máy chủ API (${API_BASE_URL}).`);
       }
       throw err;
     }
@@ -52,8 +54,11 @@ export const authService = {
       });
       return await handleResponse<AuthTokenResponse>(res);
     } catch (err: unknown) {
-      if (err instanceof Error && err.message.includes('fetch')) {
-        throw new Error('Không thể kết nối đến máy chủ API (127.0.0.1:8000).');
+      if (
+        err instanceof Error &&
+        (err.message.includes('fetch') || err.message.includes('Network'))
+      ) {
+        throw new Error(`Không thể kết nối đến máy chủ API (${API_BASE_URL}).`);
       }
       throw err;
     }

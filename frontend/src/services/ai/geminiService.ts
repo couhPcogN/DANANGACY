@@ -1,13 +1,11 @@
+import { API_BASE_URL } from '../../config/api';
+
 export interface GeminiResponse {
   success: boolean;
   text: string;
   source: 'gemini-3.8-flash' | 'local-fallback';
   errorDetails?: string;
 }
-
-const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY || '';
-const GEMINI_MODEL = 'gemini-3.8-flash';
-const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
 const LOCAL_HERITAGE_KNOWLEDGE: Record<string, string> = {
   cham: 'Bảo tàng Điêu khắc Chăm Đà Nẵng thành lập năm 1915, sở hữu bộ sưu tập hiện vật điêu khắc Champa quy mô và giá trị nhất thế giới. Lời khuyên: Tham quan gian phòng Trà Kiệu, Mỹ Sơn và Đồng Dương.',
@@ -21,115 +19,6 @@ const LOCAL_HERITAGE_KNOWLEDGE: Record<string, string> = {
     'Bảo tàng Đà Nẵng lưu giữ hơn 2.500 hiện vật, tài liệu về lịch sử tự nhiên, xã hội và văn hóa của vùng đất Đà Nẵng qua các thời kỳ phát triển.',
 };
 
-export async function generateGeminiContent(
-  prompt: string,
-  systemInstruction?: string,
-): Promise<GeminiResponse> {
-  if (!GEMINI_API_KEY) {
-    return {
-      success: false,
-      text: getFallbackAnswer(prompt),
-      source: 'local-fallback',
-      errorDetails: 'Chưa cấu hình GEMINI_API_KEY trong môi trường.',
-    };
-  }
-
-  const fullPrompt = systemInstruction
-    ? `${systemInstruction}\n\nCâu hỏi/Yêu cầu: ${prompt}`
-    : prompt;
-
-  const payload = {
-    contents: [
-      {
-        parts: [{ text: fullPrompt }],
-      },
-    ],
-  };
-
-  try {
-    const res = await fetch(`${GEMINI_ENDPOINT}?key=${GEMINI_API_KEY}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (res.status === 402) {
-      return {
-        success: false,
-        text: `${getFallbackAnswer(prompt)}\n\n*(Lưu ý: Gemini API key đã hết hạn mức credit thanh toán trên AI Studio, hệ thống đang dùng dữ liệu di sản địa phương)*`,
-        source: 'local-fallback',
-        errorDetails:
-          'HTTP 402 Payment Required: Your prepayment credits are depleted on AI Studio.',
-      };
-    }
-
-    if (!res.ok) {
-      const errJson = await res.json().catch(() => ({}));
-      return {
-        success: false,
-        text: getFallbackAnswer(prompt),
-        source: 'local-fallback',
-        errorDetails:
-          (errJson as { error?: { message?: string } })?.error?.message || `HTTP ${res.status}`,
-      };
-    }
-
-    const data = await res.json();
-    const candidateText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (candidateText) {
-      return {
-        success: true,
-        text: candidateText.trim(),
-        source: 'gemini-3.8-flash',
-      };
-    }
-
-    return {
-      success: false,
-      text: getFallbackAnswer(prompt),
-      source: 'local-fallback',
-    };
-  } catch (error) {
-    return {
-      success: false,
-      text: getFallbackAnswer(prompt),
-      source: 'local-fallback',
-      errorDetails: error instanceof Error ? error.message : String(error),
-    };
-  }
-}
-
-export async function askGeminiHeritageGuide(
-  placeName: string,
-  placeSlug?: string,
-): Promise<GeminiResponse> {
-  const system =
-    'Bạn là trợ lý AI chuyên gia du lịch & di sản văn hóa Đà Nẵng (DANANGACY). ' +
-    'Hãy giới thiệu súc tích trong 2-3 câu về nét đặc sắc lịch sử, văn hóa và đưa ra 1 lời khuyên trải nghiệm thực tế.';
-  const prompt = `Hãy thuyết minh và đưa ra lời khuyên hữu ích khi đến tham quan "${placeName}" tại Đà Nẵng.`;
-
-  const res = await generateGeminiContent(prompt, system);
-  if (!res.success && placeSlug && LOCAL_HERITAGE_KNOWLEDGE[placeSlug]) {
-    res.text = LOCAL_HERITAGE_KNOWLEDGE[placeSlug];
-  }
-  return res;
-}
-
-export async function askGeminiWeatherAdvice(
-  weatherText: string,
-  temp: number,
-  isRaining: boolean,
-): Promise<GeminiResponse> {
-  const system =
-    'Bạn là trợ lý điều hướng du lịch Đà Nẵng DANANGACY. Đưa ra 1-2 câu lời khuyên ngắn gọn về trang phục hoặc lựa chọn điểm đến phù hợp với thời tiết.';
-  const prompt = `Thời tiết Đà Nẵng hiện tại là ${temp}°C, ${weatherText}${isRaining ? ', có khả năng mưa' : ''}. Du khách nên lưu ý điều gì?`;
-
-  return generateGeminiContent(prompt, system);
-}
-
 function getFallbackAnswer(query: string): string {
   const lower = query.toLowerCase();
   for (const [key, val] of Object.entries(LOCAL_HERITAGE_KNOWLEDGE)) {
@@ -142,4 +31,130 @@ function getFallbackAnswer(query: string): string {
     }
   }
   return 'Đà Nẵng là thành phố di sản và du lịch tuyệt đẹp với các điểm đến nổi tiếng như Bán đảo Sơn Trà, Ngũ Hành Sơn, Cầu Rồng và Bảo tàng Điêu khắc Chăm. Khi đi du lịch, bạn nên mang theo ô/nón và kiểm tra tình hình thời tiết trước khi di chuyển.';
+}
+
+export async function generateGeminiContent(
+  prompt: string,
+  systemInstruction?: string,
+): Promise<GeminiResponse> {
+  const cleanPrompt = prompt.trim();
+  if (!cleanPrompt) {
+    return {
+      success: false,
+      text: getFallbackAnswer(''),
+      source: 'local-fallback',
+      errorDetails: 'Nội dung yêu cầu không được để trống.',
+    };
+  }
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/ai/generate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        prompt: cleanPrompt.slice(0, 2000),
+        system_instruction: systemInstruction ? systemInstruction.slice(0, 1000) : null,
+      }),
+    });
+
+    if (!res.ok) {
+      const errJson = await res.json().catch(() => ({}));
+      return {
+        success: false,
+        text: getFallbackAnswer(cleanPrompt),
+        source: 'local-fallback',
+        errorDetails:
+          (errJson as { detail?: string; message?: string })?.detail ||
+          (errJson as { message?: string })?.message ||
+          `HTTP ${res.status}`,
+      };
+    }
+
+    const data = await res.json();
+    return {
+      success: Boolean(data.success),
+      text: data.text ? data.text.trim() : getFallbackAnswer(cleanPrompt),
+      source: data.source === 'gemini-3.8-flash' ? 'gemini-3.8-flash' : 'local-fallback',
+      errorDetails: data.message || undefined,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      text: getFallbackAnswer(cleanPrompt),
+      source: 'local-fallback',
+      errorDetails: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
+export async function askGeminiHeritageGuide(
+  placeName: string,
+  placeSlug?: string,
+): Promise<GeminiResponse> {
+  const fallbackText =
+    (placeSlug && LOCAL_HERITAGE_KNOWLEDGE[placeSlug]) || getFallbackAnswer(placeName);
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/ai/heritage-guide`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        destination_name: placeName,
+        slug: placeSlug || null,
+      }),
+    });
+
+    if (!res.ok) {
+      const errJson = await res.json().catch(() => ({}));
+      return {
+        success: false,
+        text: fallbackText,
+        source: 'local-fallback',
+        errorDetails:
+          (errJson as { detail?: string; message?: string })?.detail ||
+          (errJson as { message?: string })?.message ||
+          `HTTP ${res.status}`,
+      };
+    }
+
+    const data = await res.json();
+    if (!data.success && placeSlug && LOCAL_HERITAGE_KNOWLEDGE[placeSlug]) {
+      return {
+        success: false,
+        text: LOCAL_HERITAGE_KNOWLEDGE[placeSlug],
+        source: 'local-fallback',
+        errorDetails: data.message || undefined,
+      };
+    }
+
+    return {
+      success: Boolean(data.success),
+      text: (data.text || fallbackText).trim(),
+      source: data.source === 'gemini-3.8-flash' ? 'gemini-3.8-flash' : 'local-fallback',
+      errorDetails: data.message || undefined,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      text: fallbackText,
+      source: 'local-fallback',
+      errorDetails: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
+export async function askGeminiWeatherAdvice(
+  weatherText: string,
+  temp: number,
+  isRaining: boolean,
+): Promise<GeminiResponse> {
+  const system =
+    'Bạn là trợ lý điều hướng du lịch Đà Nẵng DANANGACY. Đưa ra 1-2 câu lời khuyên ngắn gọn về trang phục hoặc lựa chọn điểm đến phù hợp với thời tiết.';
+  const prompt = `Thời tiết Đà Nẵng hiện tại là ${temp}°C, ${weatherText}${isRaining ? ', có khả năng mưa' : ''}. Du khách nên lưu ý điều gì?`;
+
+  return generateGeminiContent(prompt, system);
 }
