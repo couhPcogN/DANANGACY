@@ -29,6 +29,7 @@ def get_current_user_uid(
     if not authorization:
         return DEMO_USER_UID
     scheme, _, token = authorization.partition(" ")
+    token = token.strip()
     if scheme.lower() != "bearer" or not token:
         raise AuthenticationError("Authorization header phải có định dạng 'Bearer <token>'.")
     return decode_access_token(token, get_settings())
@@ -40,6 +41,7 @@ def get_authenticated_user_uid(
     if not authorization:
         raise AuthenticationError("Yêu cầu đăng nhập để thực hiện thao tác này.")
     scheme, _, token = authorization.partition(" ")
+    token = token.strip()
     if scheme.lower() != "bearer" or not token:
         raise AuthenticationError("Authorization header phải có định dạng 'Bearer <token>'.")
     return decode_access_token(token, get_settings())
@@ -70,6 +72,13 @@ def get_favorite_service(session: Annotated[Session, Depends(get_db)]) -> Favori
 def get_itinerary_service(
     session: Annotated[Session, Depends(get_db)],
     owner_uid: Annotated[str, Depends(get_current_user_uid)],
+) -> ItineraryService:
+    return ItineraryService(session, owner_uid=owner_uid)
+
+
+def get_authenticated_itinerary_service(
+    session: Annotated[Session, Depends(get_db)],
+    owner_uid: Annotated[str, Depends(get_authenticated_user_uid)],
 ) -> ItineraryService:
     return ItineraryService(session, owner_uid=owner_uid)
 
