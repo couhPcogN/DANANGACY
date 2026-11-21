@@ -16,7 +16,7 @@ class QuizRepository:
         self.session = session
 
     def list_active(self, destination_id: int | None = None) -> list[Quiz]:
-        stmt = select(Quiz).where(Quiz.status == "PUBLISHED")
+        stmt = select(Quiz).where(Quiz.status == "PUBLISHED").order_by(Quiz.id)
         if destination_id is not None:
             stmt = stmt.where(Quiz.destination_id == destination_id)
         return list(self.session.scalars(stmt))

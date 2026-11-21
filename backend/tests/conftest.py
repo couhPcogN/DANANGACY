@@ -97,3 +97,19 @@ def payload() -> dict:
             {"place_id": "son-tra", "day": 1, "start": "14:00", "end": "16:00"},
         ],
     }
+
+
+@pytest.fixture
+def auth_headers() -> dict[str, str]:
+    from app.core.config import get_settings
+    from app.core.itinerary_rules import DEMO_USER_UID
+    from app.core.security import create_access_token
+
+    token = create_access_token(DEMO_USER_UID, get_settings())
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture
+def auth_client(client: TestClient, auth_headers: dict[str, str]) -> TestClient:
+    client.headers.update(auth_headers)
+    return client

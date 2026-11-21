@@ -10,7 +10,7 @@ export type SavedAppState = {
   email: string;
   phone: string;
   favorites: string[];
-  itineraries: Itinerary[];
+  itineraries?: Itinerary[];
   quizCompleted: boolean;
   quizAnswers: (number | null)[];
   points: number;
@@ -42,5 +42,17 @@ export const appStateRepository = {
       itineraries: migratedItineraries,
     };
   },
-  save: (state: SavedAppState) => localStorage.write(STORAGE_KEY, state),
+  async save(state: SavedAppState): Promise<void> {
+    const existing = await localStorage.read<StoredAppState>(STORAGE_KEY);
+    const toSave: SavedAppState = {
+      ...state,
+      // Nếu caller không truyền itineraries (ví dụ: PersistLocalState để tránh rò rỉ dữ liệu cá nhân của User),
+      // giữ nguyên itineraries/trips cũ đã có trong STORAGE_KEY để không làm mất dữ liệu demo cũ
+      itineraries:
+        state.itineraries !== undefined
+          ? state.itineraries
+          : existing?.itineraries || existing?.trips || [],
+    };
+    await localStorage.write(STORAGE_KEY, toSave);
+  },
 };

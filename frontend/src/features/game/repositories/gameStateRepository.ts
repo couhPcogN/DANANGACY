@@ -83,6 +83,16 @@ export function createGameStateRepository(initial?: Partial<GameProgress>) {
           state.completionAwarded === 0 ? state : { ...state, completionAwarded: 0 },
         );
       },
+      setPoints(points: number) {
+        store.update((state) => ({ ...state, points }));
+      },
+      setQuizResult(points: number, pointsAwarded: number) {
+        store.update((state) => ({
+          ...state,
+          points,
+          completionAwarded: pointsAwarded,
+        }));
+      },
       redeemReward(): boolean {
         const state = store.getSnapshot();
         if (state.rewardRedeemed || state.points < 100) return false;

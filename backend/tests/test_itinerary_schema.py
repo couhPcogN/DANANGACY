@@ -21,52 +21,52 @@ def as_utc(value: datetime) -> datetime:
     return value.replace(tzinfo=UTC) if value.tzinfo is None else value.astimezone(UTC)
 
 
-def test_new_stop_limits(client: TestClient, payload: dict) -> None:
+def test_new_stop_limits(auth_client: TestClient, payload: dict) -> None:
     payload["stops"] = [{"place_id": "cham", "start": "09:00", "end": "09:29"}]
-    assert client.post(API, json=payload).status_code == 422
+    assert auth_client.post(API, json=payload).status_code == 422
     payload["stops"][0]["end"] = "09:30"
-    assert client.post(API, json=payload).status_code == 201
+    assert auth_client.post(API, json=payload).status_code == 201
     payload["stops"] *= 9
-    assert client.post(API, json=payload).status_code == 422
+    assert auth_client.post(API, json=payload).status_code == 422
 
 
-def test_unknown_destination_is_rejected(client: TestClient, payload: dict) -> None:
+def test_unknown_destination_is_rejected(auth_client: TestClient, payload: dict) -> None:
     payload["stops"][0]["place_id"] = "not-a-destination"
-    assert client.post(API, json=payload).status_code == 422
-    assert client.get(API).json() == []
+    assert auth_client.post(API, json=payload).status_code == 422
+    assert auth_client.get(API).json() == []
 
 
-def test_version_conflict_keeps_latest_data(client: TestClient, payload: dict) -> None:
-    itinerary = client.post(API, json=payload).json()
-    response = client.patch(
+def test_version_conflict_keeps_latest_data(auth_client: TestClient, payload: dict) -> None:
+    itinerary = auth_client.post(API, json=payload).json()
+    response = auth_client.patch(
         f"{API}/{itinerary['id']}", json={"title": "New title", "version": itinerary["version"]}
     )
     assert response.status_code == 200
     assert response.json()["version"] == itinerary["version"] + 1
-    stale = client.patch(
+    stale = auth_client.patch(
         f"{API}/{itinerary['id']}", json={"title": "Stale title", "version": itinerary["version"]}
     )
     assert stale.status_code == 409
-    assert client.get(f"{API}/{itinerary['id']}").json()["title"] == "New title"
-    assert client.patch(f"{API}/{itinerary['id']}", json={"version": 2}).status_code == 422
+    assert auth_client.get(f"{API}/{itinerary['id']}").json()["title"] == "New title"
+    assert auth_client.patch(f"{API}/{itinerary['id']}", json={"version": 2}).status_code == 422
 
 
 def test_dates_are_converted_to_utc_and_shift_on_update(
-    client: TestClient, payload: dict, db_engine: Engine
+    auth_client: TestClient, payload: dict, db_engine: Engine
 ) -> None:
     payload["duration"] = 2
     payload["stops"] = [
         {"place_id": "cham", "day": 1, "start": "06:00", "end": "07:00"},
         {"place_id": "cham", "day": 2, "start": "06:00", "end": "07:00"},
     ]
-    itinerary = client.post(API, json=payload).json()
+    itinerary = auth_client.post(API, json=payload).json()
     assert itinerary["stops"] == payload["stops"]
     with db_engine.connect() as connection:
         start = connection.scalar(
             sa.select(ItineraryItem.planned_start_at).order_by(ItineraryItem.position).limit(1)
         )
         assert as_utc(start) == datetime(2026, 11, 14, 23, tzinfo=UTC)
-    updated = client.patch(f"{API}/{itinerary['id']}", json={"date": "2026-11-20"})
+    updated = auth_client.patch(f"{API}/{itinerary['id']}", json={"date": "2026-11-20"})
     assert updated.status_code == 200
     assert updated.json()["date"] == "2026-11-20"
     assert updated.json()["stops"] == payload["stops"]
@@ -77,16 +77,16 @@ def test_dates_are_converted_to_utc_and_shift_on_update(
         assert as_utc(start) == datetime(2026, 11, 19, 23, tzinfo=UTC)
 
 
-def test_owner_filter(client: TestClient, payload: dict, db_engine: Engine) -> None:
+def test_owner_filter(auth_client: TestClient, payload: dict, db_engine: Engine) -> None:
     with Session(db_engine, expire_on_commit=False) as session:
         with session.begin():
             session.add(User(uid="another-user", display_name="Another user"))
         other = ItineraryService(session, owner_uid="another-user").create(
             ItineraryCreate(**payload)
         )
-    assert client.get(API).json() == []
-    assert client.get(f"{API}/{other.id}").status_code == 404
-    assert client.delete(f"{API}/{other.id}").status_code == 404
+    assert auth_client.get(API).json() == []
+    assert auth_client.get(f"{API}/{other.id}").status_code == 404
+    assert auth_client.delete(f"{API}/{other.id}").status_code == 404
 
 
 def test_seed_is_idempotent_and_wallet_cannot_be_negative(db_engine: Engine) -> None:

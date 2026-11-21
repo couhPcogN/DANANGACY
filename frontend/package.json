@@ -28,7 +28,7 @@
     "typecheck": "tsc --noEmit",
     "format": "prettier --write App.tsx index.ts src tests",
     "format:check": "prettier --check App.tsx index.ts src tests",
-    "test": "node --test tests/mvvm.test.cjs tests/weather_gemini.test.cjs tests/auth_service.test.cjs tests/guest_user_flow.test.cjs",
+    "test": "node --test tests/mvvm.test.cjs tests/weather_gemini.test.cjs tests/auth_service.test.cjs tests/guest_user_flow.test.cjs tests/quiz_service.test.cjs tests/itinerary_sync.test.cjs tests/itinerary_account_sync.test.cjs tests/itinerary_crud.test.cjs tests/itinerary_remote_fetch.test.cjs tests/itinerary_conflict.test.cjs",
     "export:web": "expo export --platform web",
     "export:android": "expo export --platform android"
   },

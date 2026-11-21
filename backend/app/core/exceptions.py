@@ -30,6 +30,11 @@ class QuizNotFoundError(Exception):
         super().__init__("Không tìm thấy bài trắc nghiệm di sản.")
 
 
+class InvalidQuizSubmissionError(Exception):
+    def __init__(self, message: str = "Bài nộp trắc nghiệm không hợp lệ.") -> None:
+        super().__init__(message)
+
+
 class VoucherOfferNotFoundError(Exception):
     def __init__(self) -> None:
         super().__init__("Không tìm thấy ưu đãi.")

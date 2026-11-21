@@ -50,8 +50,27 @@ Quy trình rà soát và đánh giá chất lượng mã nguồn ở chế độ
 #### C. Kiểm tra Bảo mật chung (Security)
 - Có chuỗi mật khẩu, token, hoặc thông tin kết nối nhạy cảm nào bị hardcode trong mã nguồn hoặc log ra console không?
 
+#### D. Kiểm tra Mô-đun Offline-First, Đồng bộ & Xử lý Xung đột (Sync & Conflict Checklist)
+Khi rà soát các tính năng liên quan đến xác thực, lưu trữ cục bộ và đồng bộ dữ liệu:
+1. **Phân quyền sở hữu & Cô lập tài khoản:**
+   - Endpoint backend thao tác dữ liệu cá nhân có lọc theo `owner_uid` không?
+   - Storage key frontend có phân vùng theo `user.uid` ổn định (`danangacy.itineraries.user.<uid>`), cách ly hoàn toàn dữ liệu Guest (`danangacy.itineraries.guest`) và dữ liệu legacy không?
+2. **Quản lý phiên & Race Conditions:**
+   - Các tác vụ bất đồng bộ (Remote Fetch, CRUD) có kiểm tra `sessionGeneration` để loại bỏ stale Promise khi đổi phiên/đăng xuất không?
+   - Thao tác đột biến (CRUD, giải quyết xung đột) và tiến trình fetch ngầm có phối hợp qua `Mutation Coordinator` dựa trên `generation`, `sequence` và `active mutation tracking` (được giải phóng an toàn trong khối `try/finally`) để vô hiệu hóa dữ liệu cũ và chống race condition không?
+3. **Optimistic Concurrency & Toàn vẹn Dữ liệu:**
+   - Yêu cầu cập nhật có gửi kèm `version` để phát hiện xung đột (HTTP 409) không?
+   - Khi rollback hoặc đối soát (reconciliation), có cơ chế chống tạo bản ghi trùng lặp `remoteId` và bảo đảm tính phục hồi lũy quyền (idempotent restoration) không?
+4. **Phân tách Trạng thái Lưu trữ & Rollback An toàn:**
+   - Có tách biệt rõ ràng giữa thành công của API mạng (PATCH HTTP 200) và thất bại của bộ nhớ cục bộ (AsyncStorage error) để tránh báo lỗi sai hoặc tạo xung đột giả?
+   - Khi khôi phục trạng thái bộ nhớ (in-memory rollback), có dùng deep snapshot theo từng mục để tránh ghi đè các chỉnh sửa cục bộ mới hơn (newer concurrent edits) không?
+5. **Trải nghiệm Giải quyết Xung đột (Conflict Resolution UX):**
+   - Thuật toán so sánh chặng dừng (diff) có đối soát sâu các trường thực tế của Stop (`placeId`, `dayIndex`, `start`, `end`) theo thứ tự hay chỉ kiểm tra độ dài mảng?
+   - Trước khi áp dụng dữ liệu từ server, client có chủ động lấy snapshot mới nhất (GET remote detail) để giảm thiểu cửa sổ xung đột TOCTOU không?
+   - Các hành vi ghi đè hoặc loại bỏ dữ liệu (Use Server / Keep Local) có yêu cầu người dùng xác nhận tường minh (confirmation dialog) trước khi thực thi không?
+
 ### Bước 3: Xuất Báo cáo Code Review
 Trình bày kết quả bằng tiếng Việt theo cấu trúc:
 1. **Phạm vi đã kiểm tra:** Liệt kê các file đã đọc.
 2. **Phát hiện (Findings):** Phân loại theo mức độ `Critical`, `High`, `Medium`, `Low`. Mỗi mục nêu rõ: `[Mức độ] Đường dẫn file:Dòng — Mô tả vấn đề & Cách khắc phục đề xuất`.
-3. **Đánh giá độ phủ kiểm thử:** Nhận xét xem thay đổi đã có test bao phủ trong `frontend/tests/mvvm.test.cjs` hoặc `backend/tests/` chưa.
+3. **Đánh giá độ phủ kiểm thử:** Nhận xét xem thay đổi đã có test bao phủ trong `frontend/tests/` hoặc `backend/tests/` chưa. Mọi nhận định kiểm thử phải dẫn chứng bằng bằng chứng thực tế (Verification Gate evidence), không suy đoán kết quả.

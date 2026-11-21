@@ -20,6 +20,7 @@ import { colors } from '../../../theme';
 import { StopCard } from '../components/StopCard';
 import { ItineraryStopsEditor } from '../components/ItineraryStopsEditor';
 import { ItinerarySummary } from '../components/ItinerarySummary';
+import { ConflictResolutionModal } from '../components/ConflictResolutionModal';
 import { useItineraryViewModel } from '../viewmodels/useItineraryViewModel';
 import { formatDayLabel, formatVietnamDate } from '../../../shared/utils/date';
 
@@ -65,12 +66,46 @@ export function ItineraryScreen() {
     timeEditor,
     selectedPreferences,
     togglePreference,
+    removeDraftStop,
+    deleteItinerary,
+    isSaving,
+    isDeleting,
+    isRemoteRefreshing,
+    remoteRefreshError,
+    refreshRemoteItineraries,
+    conflictModalVisible,
+    conflictItinerary,
+    conflictRemoteItem,
+    isLoadingConflictRemote,
+    conflictRemoteError,
+    isResolvingConflict,
+    openConflictResolution,
+    closeConflictResolution,
+    resolveConflictKeepLocal,
+    resolveConflictUseServer,
+    retryFetchConflictRemote,
   } = useItineraryViewModel();
 
   if (route.name === 'itinerary')
     return (
       <Screen bottom={<Tabs active="itinerary" />} tabs>
-        <Header title="Lịch trình của tôi" subtitle="Lưu giữ những hành trình đáng nhớ" />
+        <Header
+          title="Lịch trình của tôi"
+          subtitle="Lưu giữ những hành trình đáng nhớ"
+          action={refreshRemoteItineraries}
+          actionIcon="refresh-outline"
+          actionAccessibilityLabel="Làm mới từ máy chủ"
+        />
+        {isRemoteRefreshing ? (
+          <InfoBanner tone="blue" icon="sync-outline">
+            Đang đồng bộ lịch trình với máy chủ...
+          </InfoBanner>
+        ) : null}
+        {remoteRefreshError ? (
+          <InfoBanner tone="orange" icon="cloud-offline-outline">
+            {remoteRefreshError}
+          </InfoBanner>
+        ) : null}
         <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}>
           <Pill
             title={`Sắp tới · ${itineraries.length}`}
@@ -88,15 +123,54 @@ export function ItineraryScreen() {
             itineraries.map((itinerary) => (
               <Card key={itinerary.id}>
                 <PlacePhoto source={images.daNang} name={itinerary.title} height={150} />
-                <View style={{ marginTop: 10, marginBottom: 7 }}>
+                <View
+                  style={{
+                    marginTop: 10,
+                    marginBottom: 7,
+                    flexDirection: 'row',
+                    flexWrap: 'wrap',
+                    gap: 6,
+                  }}
+                >
                   <Pill title="Sắp tới" selected />
+                  {itinerary.syncStatus === 'synced' ? (
+                    <Pill title="Đã đồng bộ" tone="green" />
+                  ) : itinerary.syncStatus === 'pending' ? (
+                    <Pill title="Đang đồng bộ..." tone="blue" />
+                  ) : itinerary.syncStatus === 'conflict' ? (
+                    <Pill title="Xung đột" tone="orange" />
+                  ) : itinerary.syncStatus === 'error' ? (
+                    <Pill title="Lỗi đồng bộ" tone="orange" />
+                  ) : (
+                    <Pill title="Trên thiết bị" tone="gray" />
+                  )}
                 </View>
                 <ItinerarySummary itinerary={itinerary} />
-                <Button
-                  title="Xem lịch trình"
-                  kind="secondary"
-                  onPress={() => navigate('itineraryDetail', itinerary.id)}
-                />
+                {itinerary.syncStatus === 'conflict' ? (
+                  <Button
+                    title="Xử lý xung đột"
+                    kind="primary"
+                    icon="git-compare-outline"
+                    onPress={() => openConflictResolution(itinerary)}
+                    style={{ marginTop: 8 }}
+                  />
+                ) : null}
+                <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
+                  <Button
+                    title="Xem lịch trình"
+                    kind="secondary"
+                    onPress={() => navigate('itineraryDetail', itinerary.id)}
+                    style={{ flex: 1 }}
+                  />
+                  <Button
+                    title={isDeleting ? 'Đang xóa...' : 'Xóa'}
+                    kind="outline"
+                    icon="trash-outline"
+                    disabled={isDeleting}
+                    onPress={() => deleteItinerary(itinerary.id)}
+                    style={{ minWidth: 70 }}
+                  />
+                </View>
               </Card>
             ))
           ) : (
@@ -121,6 +195,18 @@ export function ItineraryScreen() {
           icon="add-outline"
           onPress={startCreate}
           style={{ marginTop: 20 }}
+        />
+        <ConflictResolutionModal
+          visible={conflictModalVisible}
+          localItinerary={conflictItinerary}
+          remoteItinerary={conflictRemoteItem}
+          isLoading={isLoadingConflictRemote}
+          error={conflictRemoteError}
+          isResolving={isResolvingConflict}
+          onKeepLocal={resolveConflictKeepLocal}
+          onUseServer={resolveConflictUseServer}
+          onResolveLater={closeConflictResolution}
+          onRetryFetch={retryFetchConflictRemote}
         />
       </Screen>
     );
@@ -299,7 +385,14 @@ export function ItineraryScreen() {
   if (route.name === 'itineraryReview')
     return (
       <Screen
-        bottom={<Button title="Lưu lịch trình" icon="bookmark-outline" onPress={submitDraft} />}
+        bottom={
+          <Button
+            title={isSaving ? 'Đang lưu...' : 'Lưu lịch trình'}
+            icon="bookmark-outline"
+            disabled={isSaving}
+            onPress={submitDraft}
+          />
+        }
       >
         <Header title="Xem lại lịch trình" onBack={back} />
         <Pill title="Xem lại & xác nhận trước khi lưu" selected />
@@ -315,6 +408,7 @@ export function ItineraryScreen() {
         <ItineraryStopsEditor
           stops={draftStopViews}
           onEdit={beginTimeEdit}
+          onRemove={removeDraftStop}
           editing={editingTime}
           timeEditor={timeEditor}
         />
@@ -392,12 +486,22 @@ export function ItineraryScreen() {
     return (
       <Screen
         bottom={
-          <Button
-            title="Chỉnh sửa lịch trình"
-            kind="secondary"
-            icon="pencil-outline"
-            onPress={() => startEdit(selectedItinerary.id)}
-          />
+          <View style={{ gap: 8 }}>
+            <Button
+              title="Chỉnh sửa lịch trình"
+              kind="secondary"
+              icon="pencil-outline"
+              disabled={isDeleting}
+              onPress={() => startEdit(selectedItinerary.id)}
+            />
+            <Button
+              title={isDeleting ? 'Đang xóa...' : 'Xóa lịch trình này'}
+              kind="outline"
+              icon="trash-outline"
+              disabled={isDeleting}
+              onPress={() => deleteItinerary(selectedItinerary.id)}
+            />
+          </View>
         }
       >
         <Header
@@ -406,10 +510,39 @@ export function ItineraryScreen() {
           actionIcon="ellipsis-horizontal"
           action={() => startEdit(selectedItinerary.id)}
         />
-        <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
           <Pill title="Đã lưu" tone="green" />
+          {selectedItinerary.syncStatus === 'synced' ? (
+            <Pill title="Đã đồng bộ" tone="green" />
+          ) : selectedItinerary.syncStatus === 'pending' ? (
+            <Pill title="Đang đồng bộ..." tone="blue" />
+          ) : selectedItinerary.syncStatus === 'conflict' ? (
+            <Pill title="Xung đột phiên bản" tone="orange" />
+          ) : selectedItinerary.syncStatus === 'error' ? (
+            <Pill title="Lỗi đồng bộ" tone="orange" />
+          ) : (
+            <Pill title="Trên thiết bị" tone="gray" />
+          )}
           <Pill title={`${selectedItinerary.stops.length} điểm đến`} selected />
         </View>
+        {selectedItinerary.syncStatus === 'conflict' ? (
+          <View style={{ gap: 8, marginVertical: 8 }}>
+            <InfoBanner tone="orange" icon="alert-circle-outline">
+              Xung đột phiên bản: Lịch trình đã được thay đổi trên máy chủ. Bản sửa đổi của bạn đang
+              được lưu an toàn trên thiết bị.
+            </InfoBanner>
+            <Button
+              title="Xem và xử lý xung đột"
+              kind="primary"
+              icon="git-compare-outline"
+              onPress={() => openConflictResolution(selectedItinerary)}
+            />
+          </View>
+        ) : selectedItinerary.syncStatus === 'error' ? (
+          <InfoBanner tone="orange" icon="cloud-offline-outline">
+            Chưa thể đồng bộ với máy chủ. Bản lưu trên thiết bị của bạn vẫn an toàn.
+          </InfoBanner>
+        ) : null}
         <ItinerarySummary itinerary={selectedItinerary} />
         {hasWeatherWarning ? (
           <Pressable
@@ -444,6 +577,18 @@ export function ItineraryScreen() {
         <Label size={12} color={colors.muted}>
           Chạm bút chì để chỉnh giờ. Chỉ cập nhật khi Áp dụng; giữ nguyên giờ đã duyệt.
         </Label>
+        <ConflictResolutionModal
+          visible={conflictModalVisible}
+          localItinerary={conflictItinerary}
+          remoteItinerary={conflictRemoteItem}
+          isLoading={isLoadingConflictRemote}
+          error={conflictRemoteError}
+          isResolving={isResolvingConflict}
+          onKeepLocal={resolveConflictKeepLocal}
+          onUseServer={resolveConflictUseServer}
+          onResolveLater={closeConflictResolution}
+          onRetryFetch={retryFetchConflictRemote}
+        />
       </Screen>
     );
 
@@ -452,8 +597,18 @@ export function ItineraryScreen() {
       <Screen
         bottom={
           <View style={{ gap: 8 }}>
-            <Button title="Lưu thay đổi" icon="checkmark" onPress={submitEdit} />
-            <Button title="Hủy thay đổi" kind="secondary" onPress={cancelEdit} />
+            <Button
+              title={isSaving ? 'Đang lưu...' : 'Lưu thay đổi'}
+              icon="checkmark"
+              disabled={isSaving}
+              onPress={submitEdit}
+            />
+            <Button
+              title="Hủy thay đổi"
+              kind="secondary"
+              disabled={isSaving}
+              onPress={cancelEdit}
+            />
           </View>
         }
       >
@@ -472,6 +627,7 @@ export function ItineraryScreen() {
         <ItineraryStopsEditor
           stops={draftStopViews}
           onEdit={beginTimeEdit}
+          onRemove={removeDraftStop}
           editing={editingTime}
           timeEditor={timeEditor}
         />

@@ -48,6 +48,9 @@ export function GameScreen() {
     current,
     score,
     displayQuestion,
+    backendResult,
+    submitting,
+    isGuest,
   } = useGameViewModel();
 
   if (route.name === 'game' || route.name === 'rewards')
@@ -94,11 +97,13 @@ export function GameScreen() {
                 >
                   {index === 0
                     ? quizCompleted
-                      ? 'Đã hoàn thành · 5 câu hỏi'
-                      : `Câu ${displayQuestion}/5 · Hiện vật Chăm Pa`
-                    : 'Chưa bắt đầu · 5 câu hỏi'}
+                      ? `Đã hoàn thành · ${quiz.length} câu hỏi`
+                      : `Câu ${displayQuestion}/${quiz.length} · Hiện vật Chăm Pa`
+                    : `Chưa bắt đầu · ${quiz.length} câu hỏi`}
                 </Label>
-                {index === 0 ? <Progress step={displayQuestion} total={5} compact /> : null}
+                {index === 0 ? (
+                  <Progress step={displayQuestion} total={quiz.length} compact />
+                ) : null}
                 <View
                   style={{
                     alignSelf: 'flex-start',
@@ -145,7 +150,7 @@ export function GameScreen() {
         <Header title="Giới thiệu thử thách" onBack={back} />
         <PlacePhoto source={images.chamArtifact} name="Hiện vật Chăm Pa" height={192} />
         <View style={{ marginTop: 16 }}>
-          <Pill title={`Đang thực hiện · Câu ${displayQuestion}/5`} selected />
+          <Pill title={`Đang thực hiện · Câu ${displayQuestion}/${quiz.length}`} selected />
         </View>
         <Label size={21} weight="bold" style={{ marginTop: 16 }}>
           Hiện vật Chăm Pa
@@ -155,7 +160,7 @@ export function GameScreen() {
           khắc.
         </Label>
         <Card>
-          <Label weight="bold">5 câu hỏi · 1 đáp án mỗi câu</Label>
+          <Label weight="bold">{quiz.length} câu hỏi · 1 đáp án mỗi câu</Label>
           <Label size={12} color={colors.muted}>
             Không giới hạn thời gian trả lời.
           </Label>
@@ -185,7 +190,7 @@ export function GameScreen() {
           <Button
             title={
               quizConfirmed
-                ? quizIndex === 4
+                ? quizIndex >= quiz.length - 1
                   ? 'Xem kết quả'
                   : 'Câu tiếp theo'
                 : 'Xác nhận đáp án'
@@ -202,9 +207,9 @@ export function GameScreen() {
           action={() => tab('game')}
         />
         <Label size={12} weight="bold" color={colors.primaryDark}>
-          Câu {quizIndex + 1}/5 · Hiện vật Chăm Pa
+          Câu {quizIndex + 1}/{quiz.length} · Hiện vật Chăm Pa
         </Label>
-        <Progress step={quizIndex + 1} total={5} />
+        <Progress step={quizIndex + 1} total={quiz.length} />
         <PlacePhoto
           source={images.chamMuseum}
           name="Bảo tàng Điêu khắc Chăm"
@@ -224,15 +229,25 @@ export function GameScreen() {
             index={index}
             selected={quizSelected === index}
             confirmed={quizConfirmed}
-            correct={index === current.correct}
+            correct={current.correct >= 0 ? index === current.correct : null}
             onSelect={() => selectAnswer(index)}
           />
         ))}
         {quizConfirmed ? (
-          <InfoBanner tone={quizSelected === current.correct ? 'green' : 'orange'}>
-            {quizSelected === current.correct
-              ? 'Chính xác! '
-              : `Chưa đúng. Đáp án: ${current.answers[current.correct]}. `}
+          <InfoBanner
+            tone={
+              current.correct >= 0
+                ? quizSelected === current.correct
+                  ? 'green'
+                  : 'orange'
+                : 'blue'
+            }
+          >
+            {current.correct >= 0
+              ? quizSelected === current.correct
+                ? 'Chính xác! '
+                : `Chưa đúng. Đáp án: ${current.answers[current.correct]}. `
+              : 'Đã ghi nhận đáp án của bạn. '}
             {current.explanation}
           </InfoBanner>
         ) : (
@@ -288,24 +303,49 @@ export function GameScreen() {
           }}
         >
           <Label size={38} weight="bold">
-            {score}/5
+            {score}/{quiz.length}
           </Label>
           <Label>câu trả lời chính xác</Label>
           <Label color={colors.primaryDark} weight="bold" style={{ marginTop: 10 }}>
-            {completionAwarded > 0
-              ? `+${completionAwarded} điểm di sản · Lần hoàn thành hiện tại`
-              : 'Đã nhận thưởng · Không cộng điểm lần xem lại'}
+            {submitting
+              ? 'Đang đồng bộ kết quả với máy chủ...'
+              : isGuest
+                ? completionAwarded > 0
+                  ? `+${completionAwarded} điểm di sản · Chế độ khách (mô phỏng)`
+                  : 'Đã nhận thưởng mô phỏng · Không cộng điểm lần xem lại'
+                : backendResult
+                  ? backendResult.points_awarded > 0
+                    ? `+${backendResult.points_awarded} điểm di sản · Đã xác nhận từ máy chủ`
+                    : backendResult.message || 'Đã nhận thưởng · Không cộng điểm lần làm lại'
+                  : completionAwarded > 0
+                    ? `+${completionAwarded} điểm di sản (Ngoại tuyến)`
+                    : 'Đã hoàn thành · Ngoại tuyến'}
           </Label>
         </Card>
         <Card>
-          <Label weight="bold">Điểm hiện có: {points}</Label>
+          <Label weight="bold">
+            {isGuest
+              ? `Điểm hiện có: ${points} (Mô phỏng)`
+              : backendResult
+                ? `Số dư ví máy chủ: ${points} điểm`
+                : `Điểm hiện có: ${points}`}
+          </Label>
           <Label size={12} color={colors.muted}>
-            {completionAwarded > 0
-              ? 'Đã cộng 50 điểm cho lần hoàn thành hợp lệ đầu tiên.'
-              : 'Đã nhận thưởng; không cộng điểm khi xem lại kết quả.'}
+            {isGuest
+              ? completionAwarded > 0
+                ? 'Bạn đang trải nghiệm ở chế độ khách. Đăng nhập để lưu kết quả và nhận điểm thưởng thực tế trên máy chủ.'
+                : 'Chế độ khách: Điểm thưởng chỉ được ghi nhận một lần trong phiên chơi.'
+              : backendResult
+                ? backendResult.points_awarded > 0
+                  ? 'Kết quả và điểm thưởng đã được ghi nhận an toàn trên máy chủ.'
+                  : backendResult.message ||
+                    'Mỗi thử thách chỉ cộng điểm thưởng một lần trên tài khoản.'
+                : 'Không thể kết nối máy chủ để đồng bộ điểm. Kết quả đang được lưu cục bộ.'}
           </Label>
           <Label size={12} color={colors.muted} style={{ marginTop: 9 }}>
-            Điểm hoàn thành chỉ được cộng một lần.
+            {isGuest
+              ? 'Điểm mô phỏng chỉ dùng để thử nghiệm tính năng đổi quà.'
+              : 'Điểm hoàn thành chỉ được cộng một lần cho mỗi tài khoản.'}
           </Label>
         </Card>
         <InfoBanner icon="ticket-outline">
@@ -319,7 +359,7 @@ export function GameScreen() {
       <Screen>
         <Header title="Xem lại đáp án" onBack={back} />
         <Label color={colors.muted} style={{ marginBottom: 14 }}>
-          Cả 5 câu · Hiện vật Chăm Pa
+          Cả {quiz.length} câu · Hiện vật Chăm Pa
         </Label>
         {quiz.map((q, i) => (
           <Card key={i}>
@@ -328,14 +368,18 @@ export function GameScreen() {
             </Label>
             <Label
               size={13}
-              color={quizAnswers[i] === q.correct ? colors.success : colors.primaryDark}
+              color={
+                q.correct >= 0 && quizAnswers[i] === q.correct ? colors.success : colors.primaryDark
+              }
               style={{ marginTop: 10 }}
             >
               Bạn chọn: {quizAnswers[i] === null ? 'Chưa trả lời' : q.answers[quizAnswers[i]!]}
             </Label>
-            <Label size={13} color={colors.success}>
-              Đáp án đúng: {q.answers[q.correct]}
-            </Label>
+            {q.correct >= 0 && (
+              <Label size={13} color={colors.success}>
+                Đáp án đúng: {q.answers[q.correct]}
+              </Label>
+            )}
             <Label size={12} color={colors.muted} style={{ marginTop: 8 }}>
               {q.explanation}
             </Label>

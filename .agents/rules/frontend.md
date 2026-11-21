@@ -21,5 +21,15 @@ Kiến trúc Frontend tuân theo luồng **View (`screens/`, `components/`) → 
 - Validation lịch trình tại `src/features/itinerary/schemas.ts` yêu cầu: thời lượng `duration` từ 1 đến 3 ngày; tổng số điểm dừng từ 1 đến 8 điểm; không trùng `placeId` trong cùng một lịch trình; mỗi điểm dừng kéo dài ít nhất 30 phút; khung giờ nằm trong `06:00`–`22:00` và không giao nhau trong cùng một `dayIndex`.
 - Logic thay thế địa điểm do thời tiết (`replaceOutdoorStop` trong `src/features/itinerary/models/itinerary.ts`) khi thay `placeId: 'son-tra'` bằng `'bao-tang-dn'` phải giữ nguyên khung giờ (`start`, `end`) và các điểm dừng còn lại.
 
-## 4. Kiểm chứng thay đổi tại Frontend
-- Khi sửa đổi mã nguồn TypeScript/TSX trong `frontend/`, sử dụng `npm run typecheck` (`tsc --noEmit`) và `npm test` (`node --test tests/mvvm.test.cjs`) tại thư mục `frontend/` để xác minh không vi phạm kiểu dữ liệu và ranh giới MVVM.
+## 4. An toàn Secret & Tích hợp Dịch vụ Bên ngoài
+- Tuyệt đối không đặt API key, token hoặc thông tin bí mật của các dịch vụ trả phí bên thứ ba (như Gemini API) vào `frontend/.env` hoặc bất kỳ tệp mã nguồn nào có tiền tố `EXPO_PUBLIC_*`.
+- Mọi yêu cầu gọi dịch vụ AI phải đi qua Backend Proxy (`/api/ai/*`) và được xử lý bắt lỗi an toàn ở phía client để duy trì trải nghiệm khi mất kết nối mạng.
+
+## 5. Toàn vẹn Dữ liệu Quiz & Chống Suy diễn ID
+- Dữ liệu câu hỏi và đáp án hiển thị cho người dùng làm bài phải xuất phát từ cùng một nguồn với dữ liệu dùng để đóng gói payload nộp bài (`submit`). Tuyệt đối không hiển thị `demoQuiz` rồi âm thầm submit câu trả lời vào `backendQuiz` khác nội dung hoặc thứ tự.
+- Bắt buộc bảo toàn `question_id` và `selected_option_id` thực tế do Backend cung cấp; cấm suy diễn ID database từ vị trí câu hỏi (`index + 1`) hay vị trí đáp án.
+- Khi người dùng đang trong phiên làm Quiz, bộ câu hỏi phải được đóng băng, không để background fetch thay đổi câu hỏi giữa chừng.
+- Phân biệt minh bạch giữa Guest (chế độ mô phỏng cục bộ) và User có tài khoản (đồng bộ máy chủ). Tuyệt đối không tự động tạo đáp án giả (`q.options[0]`) cho câu hỏi chưa trả lời.
+
+## 6. Kiểm chứng thay đổi tại Frontend
+- Khi sửa đổi mã nguồn TypeScript/TSX trong `frontend/`, chạy `npm run typecheck` (`tsc --noEmit`) và chạy toàn bộ test suite được cấu hình trong `frontend/package.json` (`npm test`) để xác minh tính đúng đắn của kiểu dữ liệu, các luồng nghiệp vụ và ranh giới kiến trúc MVVM.

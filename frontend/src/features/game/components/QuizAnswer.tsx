@@ -8,7 +8,7 @@ type QuizAnswerProps = {
   index: number;
   selected: boolean;
   confirmed: boolean;
-  correct: boolean;
+  correct?: boolean | null;
   onSelect: () => void;
 };
 
@@ -27,8 +27,17 @@ export function QuizAnswer({
     borderColor = colors.primary;
     backgroundColor = colors.warm;
     if (confirmed) {
-      borderColor = correct ? colors.success : colors.error;
-      backgroundColor = correct ? colors.successBg : colors.errorBg;
+      if (correct === true) {
+        borderColor = colors.success;
+        backgroundColor = colors.successBg;
+      } else if (correct === false) {
+        borderColor = colors.error;
+        backgroundColor = colors.errorBg;
+      } else {
+        // Ungraded / Server-evaluated: preserve active highlight without false error
+        borderColor = colors.primaryDark;
+        backgroundColor = colors.warm;
+      }
     }
   }
 
