@@ -34,8 +34,12 @@ Dựa trên yêu cầu của người dùng hoặc phạm vi file vừa thay đ�
 | **Backend Targeted Test** | `D:\Phuoc\DUT\ki9\DANANGACY\backend` | `.\.venv\Scripts\python.exe -m pytest tests/<file>.py -k "<pattern>"` | Chạy nhanh một bài hoặc nhóm bài test cụ thể khi đang debug. |
 
 ### Bước 2: Thực thi và Thu thập Bằng chứng
-- Chạy lệnh kiểm thử trong thư mục tương ứng.
-- Ghi nhận đầy đủ mã thoát (exit code), số lượng bài test `pass` / `fail`, và toàn bộ traceback nếu có lỗi.
+Quy trình thực thi và đối soát nghiêm ngặt:
+1. **Kiểm tra tệp kiểm thử thực tế:** Đọc `package.json` (`scripts.test`) hoặc `pyproject.toml` để xác định chính xác danh sách tệp kiểm thử thực tế trên ổ đĩa (`frontend/tests/*.test.cjs`, `backend/tests/*.py`). Tuyệt đối không tự suy diễn hoặc gom nhóm thành tên tệp giả.
+2. **Chạy test runner:** Thực thi lệnh kiểm thử trong thư mục tương ứng.
+3. **Thu thập raw output & exit code:** Ghi nhận đầy đủ mã thoát (exit code), số lượng bài test `pass` / `fail` / `skipped`, và toàn bộ traceback nếu có lỗi.
+4. **Đối soát số lượng test theo từng tệp:** Khi có nghi ngờ sai lệch số liệu, chạy kiểm thử độc lập cho từng tệp để đếm chính xác số lượng test của mỗi tệp vật lý.
+5. **Bảo mật dữ liệu:** Tuyệt đối không in hoặc lưu trữ JWT token, API key, mật khẩu hoặc dữ liệu cá nhân nhạy cảm trong log đầu ra kiểm thử.
 
 ### Bước 3: Chẩn đoán lỗi (Khi có Test Thất bại)
 1. **Lỗi tại Frontend (`tests/mvvm.test.cjs`):**
@@ -49,9 +53,30 @@ Dựa trên yêu cầu của người dùng hoặc phạm vi file vừa thay đ�
    - Nếu test chống gian lận ném `409 IntegrityError` thay vì `400 Bad Request`: kiểm tra xem `selected_option_id` đã được xác thực sự tồn tại trong câu hỏi trước khi chèn vào `QuizAttemptAnswer` hay chưa.
    - Nếu test đồng thời ném lỗi khóa cơ sở dữ liệu (`OperationalError: database is locked`): phân biệt lỗi do SQLite file-locking đơn luồng trong môi trường test với lỗi logic transaction.
 
-### Bước 4: Báo cáo Kết quả Kiểm thử
-Báo cáo rõ ràng theo bảng:
-- **Bộ kiểm thử đã chạy** | **Lệnh thực tế** | **Trạng thái (`PASS` / `FAIL` / `UNVERIFIED`)** | **Chi tiết số lượng test & Nguyên nhân lỗi (nếu có)**.
+### Bước 4: Báo cáo Kết quả Kiểm thử & Ma trận Bằng chứng (Evidence Matrix)
+Báo cáo kiểm thử phải tách bạch rõ ràng giữa **Phương pháp xác minh (Verification Tier)** và **Trạng thái kiểm thử (Test Status)**:
+
+#### 1. Phân định Cấp độ Xác minh (Verification Tiers):
+- `PHYSICAL DEVICE VERIFIED`: Thao tác trực tiếp trên thiết bị di động vật lý (Android/iOS thật), có ảnh chụp/video/log thiết bị.
+- `EMULATOR VERIFIED`: Thao tác trực tiếp trên runtime Android Emulator thật, có ảnh chụp màn hình/UI dump (đối với các kịch bản thao tác cục bộ như Guest mode hoặc offline storage, không bắt buộc phải có Backend HTTP log).
+- `LIVE BACKEND VERIFIED`: Gọi HTTP request thực tế qua mạng đến máy chủ FastAPI đang chạy thật qua Uvicorn (phân biệt rõ với TestClient nội bộ).
+- `BACKEND PYTEST/TESTCLIENT VERIFIED`: Kiểm thử backend qua test runner `pytest` và `TestClient` (xác thực endpoint, schema và transaction trong môi trường test cô lập).
+- `AUTOMATED NODE VERIFIED`: Chạy qua test runner tự động (`node:test`) với mock storage/network.
+- `SOURCE AUDITED`: Được kiểm chứng logic qua đọc và đối soát mã nguồn.
+
+#### 2. Trạng thái Kiểm thử:
+- `PASS`: Đạt toàn bộ assertion trong phạm vi phương pháp xác minh tương ứng.
+- `FAIL`: Không đạt một hoặc nhiều assertion.
+- `BLOCKED`: Bị nghẽn do môi trường, thiếu phụ thuộc hoặc rào cản kỹ thuật.
+- `NOT RUN`: Chưa được thực thi (đặc biệt khi chưa chạy trên Emulator thì phải ghi rõ `NOT VERIFIED ON EMULATOR`). Tuyệt đối không đánh đồng `NOT RUN` hoặc `AUTOMATED NODE` thành `EMULATOR PASS`.
+
+#### 3. Bảng Mẫu Evidence Matrix (Template tái sử dụng):
+| ID | Kịch Bản Kiểm Thử | Thao Tác Emulator? | HTTP Log Backend? | Bằng Chứng / Artifacts | Cấp Độ Xác Minh | Trạng Thái |
+|:---:|:---|:---:|:---:|:---|:---:|:---:|
+| TC-01 | Guest mode initial load | CÓ | Không (local) | `screenshot_01.png` | `EMULATOR VERIFIED` | **PASS** |
+| TC-02 | Remote Fetch 200 | CÓ | CÓ (`GET 200`) | `screenshot_02.png`, Uvicorn log | `EMULATOR VERIFIED` + `LIVE BACKEND` | **PASS** |
+| TC-03 | Offline mutation queue | KHÔNG | Không | `itinerary_crud.test.cjs` | `AUTOMATED NODE VERIFIED` | **PASS (Mock)** |
+| TC-04 | Restart sau logout | KHÔNG | Không | Logic `isActuallySignedIn` | `SOURCE AUDITED` | **NOT RUN ON EMULATOR** |
 
 ### Bước 5: Nguyên tắc Mock khi Kiểm thử Dịch vụ Bên thứ ba (AI & External APIs)
 - Tuyệt đối không thực hiện lệnh gọi mạng thực tế tới các API trả phí hoặc dịch vụ bên ngoài trong unit test tự động.
@@ -60,7 +85,4 @@ Báo cáo rõ ràng theo bảng:
 
 ### Bước 6: Quy chuẩn Kiểm thử Hợp đồng & Tích hợp (Contract Integration Testing)
 - Đối với các luồng dữ liệu hai chiều có ánh xạ khóa chính (như Quiz & Options): Bắt buộc kiểm thử với bộ dữ liệu kiểm định có khóa chính không liên tiếp (VD: Question ID 1005, 2042; Option ID 7701..7703) và thứ tự hiển thị bị đảo lộn so với database để đảm bảo client và server không suy diễn vị trí mảng.
-- Khi báo cáo kết quả kiểm thử, phải phân định minh bạch các cấp độ kiểm chứng:
-  - **Unit Test PASS:** Đã kiểm tra logic hàm/phương thức độc lập.
-  - **Contract / Integration Test PASS:** Đã kiểm tra schema, payload mapping và giao dịch qua API TestClient.
-  - **Manual Device Test UNVERIFIED:** Chưa kiểm chứng trực tiếp trên thiết bị Android/iOS vật lý hoặc Expo emulator.
+- Báo cáo kết quả kiểm thử hợp đồng phải liên kết chặt chẽ với bảng Evidence Matrix ở Bước 4, không tạo kết quả kiểm thử giả định và không khẳng định mức độ sẵn sàng production khi chưa kiểm thử trên thiết bị độc lập.
