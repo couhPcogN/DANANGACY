@@ -17,6 +17,7 @@ export const createSavedItinerary = (itinerary: Itinerary): Itinerary => ({
   ...itinerary,
   id: `itinerary-${Date.now()}`,
   saved: true,
+  syncStatus: itinerary.syncStatus ?? 'local',
 });
 export const updateItinerary = (
   itineraries: Itinerary[],

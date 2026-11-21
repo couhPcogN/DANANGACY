@@ -1,5 +1,6 @@
 export type AuthUser = {
-  id: number;
+  uid?: string;
+  id?: number;
   email: string;
   display_name: string;
 };

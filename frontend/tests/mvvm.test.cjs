@@ -224,6 +224,34 @@ test('weather replacement preserves time slots and other stops', () => {
   );
 });
 
+test('itinerary allows removing stops and deleting saved records', () => {
+  const repository = createItineraryRepository();
+  const original = repository.getSnapshot().itineraries[0];
+  assert.equal(repository.actions.startEdit(original.id), true);
+  const initialStopCount = repository.getSnapshot().draft.stops.length;
+  assert.ok(initialStopCount >= 2);
+
+  // Remove first stop
+  assert.equal(repository.actions.removeDraftStop(0), true);
+  assert.equal(repository.getSnapshot().draft.stops.length, initialStopCount - 1);
+
+  // Save the edit
+  repository.actions.saveEdit();
+  assert.equal(repository.getSnapshot().itineraries[0].stops.length, initialStopCount - 1);
+
+  // Prevent removing last stop
+  while (repository.getSnapshot().draft.stops.length > 1) {
+    repository.actions.removeDraftStop(0);
+  }
+  assert.equal(repository.getSnapshot().draft.stops.length, 1);
+  assert.equal(repository.actions.removeDraftStop(0), false);
+
+  // Delete itinerary
+  assert.equal(repository.actions.deleteItinerary(original.id), true);
+  assert.equal(repository.getSnapshot().itineraries.length, 0);
+  assert.equal(repository.actions.deleteItinerary('non-existent-id'), false);
+});
+
 test('quiz resumes progress, awards once and prevents duplicate reward redemption', () => {
   const repository = createGameStateRepository();
   repository.actions.startQuiz();

@@ -6,6 +6,7 @@ import { TimeEditor } from './TimeEditor';
 type ItineraryStopsEditorProps = {
   stops: StopView[];
   onEdit: (index: number, stop: Stop) => void;
+  onRemove?: (index: number) => void;
   editing: boolean;
   timeEditor: ComponentProps<typeof TimeEditor>;
 };
@@ -13,6 +14,7 @@ type ItineraryStopsEditorProps = {
 export function ItineraryStopsEditor({
   stops,
   onEdit,
+  onRemove,
   editing,
   timeEditor,
 }: ItineraryStopsEditorProps) {
@@ -24,6 +26,7 @@ export function ItineraryStopsEditor({
           stop={stop}
           editing
           onPress={() => onEdit(index, stop)}
+          onRemove={onRemove ? () => onRemove(index) : undefined}
         />
       ))}
       {editing ? <TimeEditor {...timeEditor} /> : null}
