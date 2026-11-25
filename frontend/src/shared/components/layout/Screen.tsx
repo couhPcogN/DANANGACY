@@ -77,7 +77,7 @@ export function Screen({
               tabs && { paddingHorizontal: 0, paddingBottom: 0 },
               !tabs && {
                 paddingHorizontal: horizontalPadding,
-                paddingBottom: Math.max(8, insets.bottom),
+                paddingBottom: Math.max(12, insets.bottom + 8),
               },
             ]}
           >
