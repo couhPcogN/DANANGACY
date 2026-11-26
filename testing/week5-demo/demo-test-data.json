@@ -1,0 +1,145 @@
+{
+  "project": "DANANGACY — Smart Tourism Platform",
+  "phase": "Week 5 Testing & Defect Tracking Demo",
+  "timestamp": "2026-11-26T07:00:00Z",
+  "authentication": {
+    "positive_valid_user": {
+      "scenario": "Đăng nhập thành công với tài khoản mẫu hợp lệ",
+      "email": "han_danang@danangacy.vn",
+      "password": "Password123!",
+      "expected_status": 200,
+      "expected_jwt": true,
+      "user_profile": {
+        "full_name": "Lê Ngọc Hân",
+        "points": 450,
+        "role": "tourist"
+      }
+    },
+    "negative_wrong_password": {
+      "scenario": "Đăng nhập thất bại do sai mật khẩu",
+      "email": "han_danang@danangacy.vn",
+      "password": "WrongPassword999!",
+      "expected_status": 401,
+      "expected_error": "Incorrect email or password"
+    },
+    "empty_credentials": {
+      "scenario": "Bấm đăng nhập khi để trống email và mật khẩu",
+      "email": "",
+      "password": "",
+      "client_validation": "Form submission blocked locally without HTTP request",
+      "expected_error_field": ["email", "password"]
+    },
+    "boundary_password_length": {
+      "scenario_too_short": {
+        "password": "Ab1!",
+        "length": 4,
+        "rule": "Password min length is 8 characters",
+        "expected_valid": false
+      },
+      "scenario_exact_boundary": {
+        "password": "Passw0r!",
+        "length": 8,
+        "expected_valid": true
+      }
+    }
+  },
+  "itinerary_crud_and_occ": {
+    "positive_create_itinerary": {
+      "scenario": "Tạo lịch trình du lịch Đà Nẵng 2 ngày hợp lệ",
+      "title": "Khám Phá Di Sản & Ẩm Thực Đà Nẵng",
+      "start_date": "2026-12-01T08:00:00Z",
+      "end_date": "2026-12-02T18:00:00Z",
+      "is_public": true,
+      "stops": [
+        {
+          "place_id": 1,
+          "name": "Bán đảo Sơn Trà & Chùa Linh Ứng",
+          "day_number": 1,
+          "order_index": 1,
+          "start_time": "08:30",
+          "end_time": "11:30"
+        },
+        {
+          "place_id": 2,
+          "name": "Cầu Rồng & Chợ Đêm Sơn Trà",
+          "day_number": 1,
+          "order_index": 2,
+          "start_time": "18:00",
+          "end_time": "21:00"
+        }
+      ],
+      "expected_status": 201,
+      "expected_version": 1
+    },
+    "empty_title_validation": {
+      "scenario": "Tạo lịch trình với tiêu đề rỗng",
+      "title": "   ",
+      "expected_status": 422,
+      "expected_error": "String should have at least 1 character"
+    },
+    "boundary_stops_limit": {
+      "scenario_zero_stops": {
+        "stops": [],
+        "expected_status": 201,
+        "note": "Draft itineraries with zero stops are allowed"
+      },
+      "scenario_adjacent_time_slots": {
+        "stop_1": { "start_time": "08:00", "end_time": "10:00" },
+        "stop_2": { "start_time": "10:00", "end_time": "12:00" },
+        "rule": "Adjacent end/start times on the same day are valid",
+        "expected_valid": true
+      },
+      "scenario_overlapping_time_slots": {
+        "stop_1": { "start_time": "08:00", "end_time": "11:00" },
+        "stop_2": { "start_time": "10:00", "end_time": "12:00" },
+        "rule": "Overlapping times on the same day are rejected",
+        "expected_status": 422
+      }
+    },
+    "optimistic_concurrency_control": {
+      "scenario": "Phát hiện xung đột cập nhật lịch trình đồng thời (OCC)",
+      "itinerary_id": 101,
+      "server_current_version": 2,
+      "client_stale_payload": {
+        "title": "Cập nhật từ thiết bị Offline",
+        "version": 1
+      },
+      "expected_status": 409,
+      "expected_error": "Version conflict: Itinerary has been modified by another session",
+      "resolution": "Client triggers ConflictResolutionModal to compare local vs remote versions"
+    }
+  },
+  "cultural_quiz_gamification": {
+    "positive_quiz_submission": {
+      "scenario": "Nộp bài đố vui di sản Đà Nẵng với câu trả lời chính xác",
+      "quiz_id": 1,
+      "challenge_title": "Tìm hiểu Cầu Rồng & Sông Hàn",
+      "answers": [
+        { "question_id": 101, "selected_option_index": 2 },
+        { "question_id": 102, "selected_option_index": 0 }
+      ],
+      "expected_status": 200,
+      "expected_score": 100,
+      "expected_points_awarded": 50
+    },
+    "negative_anti_cheat_duplicate": {
+      "scenario": "Nộp bài lặp lại để nhận thưởng nhiều lần",
+      "quiz_id": 1,
+      "rule": "Single reward claim enforcement",
+      "expected_status": 400,
+      "expected_error": "Reward already claimed for this quiz"
+    }
+  },
+  "network_offline_simulation": {
+    "offline_storage_read": {
+      "scenario": "Mất mạng đột ngột khi du khách đang di chuyển ngoài đường",
+      "simulation_command": "adb reverse --remove tcp:8000",
+      "expected_behavior": "Giao diện không crash, đọc dữ liệu cache từ AsyncStorage, hiển thị banner 'Đang ngoại tuyến'"
+    },
+    "online_restoration_sync": {
+      "scenario": "Có mạng trở lại và tự động đồng bộ",
+      "simulation_command": "adb reverse tcp:8000 tcp:8000",
+      "expected_behavior": "Hệ thống tự động kết nối lại backend, kiểm tra version và đồng bộ các thay đổi cục bộ"
+    }
+  }
+}
